@@ -20,7 +20,8 @@ allprojects {
     }
 
     ext {
-        androidSupportVersion = "27.0.2"
+        androidSupportVersion = '27.0.2'
+        timberVersion = '4.7.0'
 
     }
 }

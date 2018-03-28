@@ -16,9 +16,7 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.format.DateUtils;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.MenuItem;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -33,6 +31,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import timber.log.Timber;
+
 /**
  * An activity representing a list of Articles. This activity has different presentations for
  * handset and tablet-size devices. On handsets, the activity presents a list of items, which when
@@ -42,7 +42,7 @@ import java.util.GregorianCalendar;
 public class ArticleListActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String TAG = ArticleListActivity.class.toString();
+
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
@@ -56,6 +56,9 @@ public class ArticleListActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Timber.d("Entering onCreate");
+
         setContentView(R.layout.activity_article_list);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -69,17 +72,20 @@ public class ArticleListActivity extends AppCompatActivity implements
         getLoaderManager().initLoader(0, null, this);
 
         if (savedInstanceState == null) {
+            // start service if not responding to a configuration change
             refresh();
         }
     }
 
     private void refresh() {
+        Timber.d("Starting UpdaterService");
         startService(new Intent(this, UpdaterService.class));
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        Timber.d("onStart executing");
         registerReceiver(mRefreshingReceiver,
                 new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
     }
@@ -87,14 +93,23 @@ public class ArticleListActivity extends AppCompatActivity implements
     @Override
     protected void onStop() {
         super.onStop();
+        Timber.d("onStop executing");
         unregisterReceiver(mRefreshingReceiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Timber.d("onDestroy executing");
     }
 
     private boolean mIsRefreshing = false;
 
+    // Broadcast receiver which listens to UpdateService article refresh update state changes
     private BroadcastReceiver mRefreshingReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            // UpdateService broadcast prior to starting a fetch and again when fetch is complete
             if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
                 mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
                 updateRefreshingUI();
@@ -103,6 +118,7 @@ public class ArticleListActivity extends AppCompatActivity implements
     };
 
     private void updateRefreshingUI() {
+
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
     }
 
@@ -159,8 +175,10 @@ public class ArticleListActivity extends AppCompatActivity implements
                 String date = mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE);
                 return dateFormat.parse(date);
             } catch (ParseException ex) {
-                Log.e(TAG, ex.getMessage());
-                Log.i(TAG, "passing today's date");
+                Timber.e(ex);
+
+                Timber.i("passing today's date");
+
                 return new Date();
             }
         }
