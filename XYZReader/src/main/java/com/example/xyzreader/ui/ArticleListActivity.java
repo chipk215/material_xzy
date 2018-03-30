@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
@@ -53,6 +54,8 @@ public class ArticleListActivity extends AppCompatActivity implements
     // Most time functions can only handle 1902 - 2037
     private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
 
+    private boolean mServiceStarted;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,24 +64,40 @@ public class ArticleListActivity extends AppCompatActivity implements
 
         setContentView(R.layout.activity_article_list);
 
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mToolbar =  findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
 
 
-        final View toolbarContainerView = findViewById(R.id.toolbar_container);
+        //final View toolbarContainerView = findViewById(R.id.toolbar_container);
 
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+        mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        // handle user initiated refresh requests
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // if a refresh is already in progress do not start another one
+                if (!mServiceStarted) {
+                    refresh();
+                }
+            }
+        });
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        // revisit- do we want the user to initiate refreshes?
+        mSwipeRefreshLayout.setEnabled(false);
+
+
+        mRecyclerView =  findViewById(R.id.recycler_view);
         getLoaderManager().initLoader(0, null, this);
 
         if (savedInstanceState == null) {
-            // start service if not responding to a configuration change
+            //refresh the UI if not handling a configuration change
             refresh();
         }
     }
 
     private void refresh() {
         Timber.d("Starting UpdaterService");
+        mServiceStarted = true;
         startService(new Intent(this, UpdaterService.class));
     }
 
@@ -103,7 +122,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         Timber.d("onDestroy executing");
     }
 
-    private boolean mIsRefreshing = false;
+
 
     // Broadcast receiver which listens to UpdateService article refresh update state changes
     private BroadcastReceiver mRefreshingReceiver = new BroadcastReceiver() {
@@ -111,15 +130,18 @@ public class ArticleListActivity extends AppCompatActivity implements
         public void onReceive(Context context, Intent intent) {
             // UpdateService broadcast prior to starting a fetch and again when fetch is complete
             if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
-                mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
-                updateRefreshingUI();
+
+                boolean isRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
+                Timber.d("Received Broadcast Action State Change Intent: " + isRefreshing);
+                updateRefreshingUI(isRefreshing);
             }
         }
     };
 
-    private void updateRefreshingUI() {
-
-        mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
+    private void updateRefreshingUI(boolean isRefreshing) {
+        Timber.d("SwipeRefreshLayout.setRefreshing: " + isRefreshing);
+        mServiceStarted = isRefreshing;
+        mSwipeRefreshLayout.setRefreshing(isRefreshing);
     }
 
     @Override
@@ -133,9 +155,9 @@ public class ArticleListActivity extends AppCompatActivity implements
         adapter.setHasStableIds(true);
         mRecyclerView.setAdapter(adapter);
         int columnCount = getResources().getInteger(R.integer.list_column_count);
-        StaggeredGridLayoutManager sglm =
-                new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
-        mRecyclerView.setLayoutManager(sglm);
+      //  StaggeredGridLayoutManager sglm =
+      //          new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(new GridLayoutManager(this, columnCount));
     }
 
     @Override
