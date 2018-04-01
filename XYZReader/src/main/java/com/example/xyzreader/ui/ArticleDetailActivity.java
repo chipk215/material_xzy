@@ -14,8 +14,10 @@ import android.support.v4.content.Loader;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
@@ -53,13 +55,8 @@ public class ArticleDetailActivity extends AppCompatActivity
 
 
         setContentView(R.layout.activity_article_detail);
-
+        setUpToolBar();
         getSupportLoaderManager().initLoader(0, null, this);
-
-        Toolbar toolbar =  findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-
 
         if (savedInstanceState == null) {
             if (getIntent() != null && getIntent().getData() != null) {
@@ -72,6 +69,28 @@ public class ArticleDetailActivity extends AppCompatActivity
         setUpViewPager();
     }
 
+    private void setUpToolBar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            ViewCompat.setElevation(toolbar, 0);
+            setSupportActionBar(toolbar);
+            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    supportFinishAfterTransition();
+                }
+            });
+
+
+
+            ActionBar ab = getSupportActionBar();
+            if (ab != null) {
+                ab.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
+                ab.setDisplayHomeAsUpEnabled(true);
+                ab.setDisplayShowHomeEnabled(true);
+            }
+        }
+    }
 
     private void setUpViewPager(){
         mPager = findViewById(R.id.article_pager);

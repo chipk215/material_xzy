@@ -4,6 +4,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 27
+    buildToolsVersion "27.0.3"
 
     defaultConfig {
         applicationId "com.example.xyzreader"
@@ -26,9 +27,7 @@ dependencies {
     implementation "com.jakewharton.timber:timber:$timberVersion"
     implementation 'com.squareup.okhttp3:okhttp:3.1.2'
 
-    implementation ("com.github.bumptech.glide:glide:$glideVersion") {
-        exclude group: "com.android.support"
-    }
+
 
 
 
