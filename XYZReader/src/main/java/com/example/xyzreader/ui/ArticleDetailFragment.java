@@ -29,6 +29,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import timber.log.Timber;
+
 /**
  * A fragment representing a single Article detail screen. This fragment is
  * either contained in a {@link ArticleListActivity} in two-pane mode (on
@@ -36,7 +38,6 @@ import java.util.GregorianCalendar;
  */
 public class ArticleDetailFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor> {
-    private static final String TAG = "ArticleDetailFragment";
 
     public static final String ARG_ITEM_ID = "item_id";
 
@@ -45,7 +46,8 @@ public class ArticleDetailFragment extends Fragment implements
     private View mRootView;
     private int mMutedColor = 0xFF333333;
 
-
+    private Bitmap mArticleImageBitmap;
+    private String mPhotoURL;
 
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
@@ -75,6 +77,7 @@ public class ArticleDetailFragment extends Fragment implements
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
+            Timber.d("Detail Fragment onCreate... itemId= " + mItemId);
         }
 
         setHasOptionsMenu(true);
@@ -93,17 +96,18 @@ public class ArticleDetailFragment extends Fragment implements
         getLoaderManager().initLoader(0, null, this);
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
 
+        Timber.d("Entering onCreateView");
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
 
-      //  bindViews();
+     //   bindViews();
 
         return mRootView;
     }
-
 
 
 
@@ -112,31 +116,42 @@ public class ArticleDetailFragment extends Fragment implements
             String date = mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE);
             return dateFormat.parse(date);
         } catch (ParseException ex) {
-            Log.e(TAG, ex.getMessage());
-            Log.i(TAG, "passing today's date");
+            Timber.e(ex);
+            Timber.i("passing today's date");
             return new Date();
         }
     }
 
     private void bindViews() {
+        Timber.d("Entering bindViews for mItemId: " + mItemId);
         if (mRootView == null) {
+            Timber.d("Exiting bindViews due to null mRootView");
             return;
         }
 
+        Timber.d("Obtaining view ids");
         TextView titleView =  mRootView.findViewById(R.id.article_title);
         TextView bylineView = mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
         TextView bodyView =  mRootView.findViewById(R.id.article_body);
-        final ImageView articleImage = getActivity().findViewById(R.id.article_image);
 
-        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
+  //      final ImageView articleImage = getActivity().findViewById(R.id.article_image);
+
+        //bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
         if (mCursor != null) {
+
+            Timber.d("Valid mCursor, binding data to views");
+
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
 
+            // retrieve title
             titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+
+
+            // retrieve published date
             Date publishedDate = parsePublishedDate();
             if (!publishedDate.before(START_OF_EPOCH.getTime())) {
                 bylineView.setText(Html.fromHtml(
@@ -156,30 +171,19 @@ public class ArticleDetailFragment extends Fragment implements
                                 + "</font>"));
 
             }
+
+            // get body text
+            Timber.d("Request body text");
             bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
+            Timber.d("Body text returned");
 
-            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
-                    .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
-                        @Override
-                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
-                            Bitmap bitmap = imageContainer.getBitmap();
-                            if (bitmap != null) {
-                                Palette p = Palette.generate(bitmap, 12);
-                                mMutedColor = p.getDarkMutedColor(0xFF333333);
-                                articleImage.setImageBitmap(imageContainer.getBitmap());
-                                mRootView.findViewById(R.id.meta_bar)
-                                        .setBackgroundColor(mMutedColor);
+            // get photo
+            mPhotoURL = mCursor.getString(ArticleLoader.Query.PHOTO_URL);
+            Timber.d("Retrieve photo url: " + mPhotoURL);
 
-                            }
-                        }
-
-                        @Override
-                        public void onErrorResponse(VolleyError volleyError) {
-
-                        }
-                    });
 
         } else {
+            Timber.d("mCurosor null ... exiting bindViews");
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
             bylineView.setText("N/A" );
@@ -195,6 +199,7 @@ public class ArticleDetailFragment extends Fragment implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        Timber.d("Entering onLoadFinished");
         if (!isAdded()) {
             if (cursor != null) {
                 cursor.close();
@@ -202,9 +207,10 @@ public class ArticleDetailFragment extends Fragment implements
             return;
         }
 
+        Timber.d("Cursor now valid in detail fragment");
         mCursor = cursor;
         if (mCursor != null && !mCursor.moveToFirst()) {
-            Log.e(TAG, "Error reading item detail cursor");
+            Timber.e( "Error reading item detail cursor");
             mCursor.close();
             mCursor = null;
         }
@@ -214,8 +220,24 @@ public class ArticleDetailFragment extends Fragment implements
 
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
+        Timber.d("onLoaderReset invoked");
         mCursor = null;
         bindViews();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        Timber.d("Detail Fragment on Resume.. itemId = " + mItemId);
+    }
+
+
+    public Bitmap getArticleImageBitmap(){
+        return mArticleImageBitmap;
+    }
+
+    public String getPhotoURL(){
+        return mPhotoURL;
     }
 
 

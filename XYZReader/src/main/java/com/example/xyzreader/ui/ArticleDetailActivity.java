@@ -1,30 +1,26 @@
 package com.example.xyzreader.ui;
 
 
-
-
 import android.database.Cursor;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
+import android.graphics.Bitmap;
 import android.os.Bundle;
-
-
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
-
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
-import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowInsets;
+import android.widget.ImageView;
 
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
@@ -42,9 +38,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     private long mSelectedItemId;
 
-
     private ViewPager mPager;
-
 
 
     @Override
@@ -52,7 +46,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         Timber.d("Executing ArticleDetailActivity onCreate");
-
 
         setContentView(R.layout.activity_article_detail);
         setUpToolBar();
@@ -64,7 +57,6 @@ public class ArticleDetailActivity extends AppCompatActivity
                 mSelectedItemId = mStartId;
             }
         }
-
 
         setUpViewPager();
     }
@@ -80,7 +72,6 @@ public class ArticleDetailActivity extends AppCompatActivity
                     supportFinishAfterTransition();
                 }
             });
-
 
 
             ActionBar ab = getSupportActionBar();
@@ -100,17 +91,58 @@ public class ArticleDetailActivity extends AppCompatActivity
         mPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
             @Override
             public Fragment getItem(int position) {
+                Timber.d("Pager request item position: " + position);
                 if (mCursor != null){
+                    int currentPosition = mCursor.getPosition();
+
                     mCursor.moveToPosition(position);
-                    return ArticleDetailFragment.newInstance(mCursor.getLong(ArticleLoader.Query._ID));
+                    Fragment fragment = ArticleDetailFragment.newInstance(mCursor.getLong(ArticleLoader.Query._ID));
+                    mCursor.moveToPosition(currentPosition);
+                    return fragment;
 
                 }
+                Timber.d("Pager request article but cursor is null");
                 return null;  //TODO throw an exception ?
             }
 
             @Override
             public int getCount() {
                 return (mCursor != null) ? mCursor.getCount() : 0;
+            }
+
+            @Override
+            public void setPrimaryItem(ViewGroup container, int position, Object object){
+                Timber.d("setPrimaryItem invoked");
+                super.setPrimaryItem(container, position, object);
+                ArticleDetailFragment fragment = (ArticleDetailFragment) object;
+                if (fragment != null) {
+                    final ImageView articleImage = findViewById(R.id.article_image);
+                    Timber.d("Displaying article bitmap");
+                    mCursor.moveToPosition(position);
+                    String photoUrl = mCursor.getString(ArticleLoader.Query.PHOTO_URL);
+                    ImageLoaderHelper.getInstance(container.getContext()).getImageLoader()
+                            .get(photoUrl, new ImageLoader.ImageListener() {
+                                @Override
+                                public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                                    Timber.d("Article image loaded");
+                                    Bitmap articleImageBitmap  = imageContainer.getBitmap();
+                                    if ( articleImageBitmap!= null) {
+                                       // Palette p = Palette.generate(mArticleImageBitmap, 12);
+                                       // mMutedColor = p.getDarkMutedColor(0xFF333333);
+                                        articleImage.setImageBitmap(articleImageBitmap);
+                                       // mRootView.findViewById(R.id.meta_bar)
+                                             //   .setBackgroundColor(mMutedColor);
+
+                                    }
+                                }
+
+                                @Override
+                                public void onErrorResponse(VolleyError volleyError) {
+                                    Timber.d("Failed to obtain article image");
+                                }
+                            });
+                }
+
             }
         });
 
@@ -123,13 +155,14 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        Timber.d("onLoadFinished");
         mCursor = cursor;
         mPager.getAdapter().notifyDataSetChanged();
 
         // Select the start ID
         if (mStartId > 0) {
             mCursor.moveToFirst();
-            // TODO: optimize
+
             while (!mCursor.isAfterLast()) {
                 if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
                     final int position = mCursor.getPosition();
@@ -147,8 +180,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         mCursor = null;
         mPager.getAdapter().notifyDataSetChanged();
     }
-
-
 
 
 }
