@@ -67,6 +67,9 @@
             android:paddingBottom="@dimen/detail_body_bottom_margin"
             android:textColor="@color/cardview_dark_background"
 
+            android:maxLines="60"
+            android:ellipsize="marquee"
+
             android:textSize="@dimen/detail_body_text_size" />
 
     </RelativeLayout>

@@ -20,6 +20,7 @@ import com.example.xyzreader.R;
 import com.example.xyzreader.adapters.ArticlesListAdapter;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.UpdaterService;
+import com.facebook.stetho.Stetho;
 
 import timber.log.Timber;
 
@@ -45,6 +46,8 @@ public class ArticleListActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
 
         Timber.d("Entering onCreate");
+
+        Stetho.initializeWithDefaults(this);
 
         setContentView(R.layout.activity_article_list);
 
