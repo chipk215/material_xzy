@@ -27,9 +27,17 @@
     <style name="Theme.Bacon.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <item name="colorPrimary">@color/primaryColor</item>
-        <item name="colorPrimaryDark">@color/primaryDarkColor</item>
-        <item name="colorAccent">@color/secondaryColor</item>
+    </style>
+
+    <style name="article_text" parent="@android:style/TextAppearance.Large">
+        <item name="android:textColor">#fff</item>
+        <item name="android:textSize">@dimen/detail_title_text_size</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="article_byline" parent="@android:style/TextAppearance.Small">
+        <item name="android:textColor">#8fff</item>
+
     </style>
 
 

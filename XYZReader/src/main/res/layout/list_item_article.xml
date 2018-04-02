@@ -4,13 +4,13 @@
     android:layout_height="wrap_content"
     xmlns:card_view="http://schemas.android.com/tools"
 
-    android:layout_marginTop="8dp"
-    android:layout_marginStart="8dp"
-    android:layout_marginEnd="8dp"
-    android:layout_marginBottom="8dp"
+    android:layout_marginTop="@dimen/half_padding_norm"
+    android:layout_marginStart="@dimen/half_padding_norm"
+    android:layout_marginEnd="@dimen/half_padding_norm"
+    android:layout_marginBottom="@dimen/half_padding_norm"
 
     card_view:cardUseCompatPadding="true"
-    card_view:cardCornerRadius="8dp"
+    card_view:cardCornerRadius="card_corner_radius"
     android:clickable="true"
     android:focusable="true"
     >
@@ -35,10 +35,10 @@
             style="@style/TextAppearance.AppCompat.Subhead"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="16dp"
-            android:paddingTop="16dp"
-            android:paddingRight="16dp"
-            android:paddingBottom="4dp"
+            android:paddingLeft="@dimen/padding_norm"
+            android:paddingTop="@dimen/padding_norm"
+            android:paddingRight="@dimen/padding_norm"
+            android:paddingBottom="@dimen/small_bottom_padding"
             android:textColor="@color/primaryTextColor"
             android:ellipsize="end"
             android:maxLines="4" />
@@ -48,10 +48,10 @@
             style="@style/TextAppearance.AppCompat.Body1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:paddingBottom="16dp"
-            android:textColor="#6000"
+            android:paddingLeft="@dimen/padding_norm"
+            android:paddingRight="@dimen/padding_norm"
+            android:paddingBottom="@dimen/padding_norm"
+            android:textColor="@color/sub_title_textColor"
             android:maxLines="2"
             android:ellipsize="end" />
     </LinearLayout>

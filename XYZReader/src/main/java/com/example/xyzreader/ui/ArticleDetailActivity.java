@@ -1,12 +1,14 @@
 package com.example.xyzreader.ui;
 
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
@@ -54,7 +56,23 @@ public class ArticleDetailActivity extends AppCompatActivity
         }
 
         setUpViewPager();
+
+
+        findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mCursor != null) {
+                    String message = formatShareMessage(mCursor);
+                    startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
+                            .setType("text/plain")
+                            .setText(message)
+                            .getIntent(), getString(R.string.action_share)));
+                }
+            }
+        });
     }
+
+
 
     private void setUpToolBar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -140,4 +158,14 @@ public class ArticleDetailActivity extends AppCompatActivity
     }
 
 
+    private String formatShareMessage(Cursor cursor){
+        String message = getString(R.string.share_message);
+        message += System.getProperty("line.separator") + System.getProperty("line.separator");
+        message += getString(R.string.title);
+        message += cursor.getString(ArticleLoader.Query.TITLE);
+        message += System.getProperty("line.separator") + System.getProperty("line.separator");
+        message += getString(R.string.author);
+        message += cursor.getString(ArticleLoader.Query.AUTHOR);
+        return message;
+    }
 }

@@ -9,4 +9,8 @@
 
     <string name="up">Up</string>
 
+    <string name="share_message">Here is a good book...</string>
+    <string name="title">Title:\u0020\u0020</string>
+    <string name="author">Author:\u0020\u0020</string>
+
 </resources>
