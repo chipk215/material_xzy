@@ -2,17 +2,17 @@ package com.example.xyzreader.ui;
 
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Typeface;
+
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v7.graphics.Palette;
+
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
+
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 
@@ -135,7 +136,7 @@ public class ArticleDetailFragment extends Fragment implements
         bylineView.setMovementMethod(new LinkMovementMethod());
         TextView bodyView =  mRootView.findViewById(R.id.article_body);
 
-  //      final ImageView articleImage = getActivity().findViewById(R.id.article_image);
+        final ImageView articleImage = mRootView.findViewById(R.id.article_image);
 
         //bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
@@ -180,10 +181,31 @@ public class ArticleDetailFragment extends Fragment implements
             // get photo
             mPhotoURL = mCursor.getString(ArticleLoader.Query.PHOTO_URL);
             Timber.d("Retrieve photo url: " + mPhotoURL);
+            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
+                    .get(mPhotoURL, new ImageLoader.ImageListener() {
+                        @Override
+                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                            Timber.d("Article image loaded");
+                            Bitmap articleImageBitmap  = imageContainer.getBitmap();
+                            if ( articleImageBitmap!= null) {
+                                // Palette p = Palette.generate(mArticleImageBitmap, 12);
+                                // mMutedColor = p.getDarkMutedColor(0xFF333333);
+                                articleImage.setImageBitmap(articleImageBitmap);
+                                // mRootView.findViewById(R.id.meta_bar)
+                                //   .setBackgroundColor(mMutedColor);
+
+                            }
+                        }
+
+                        @Override
+                        public void onErrorResponse(VolleyError volleyError) {
+                            Timber.d("Failed to obtain article image");
+                        }
+                    });
 
 
         } else {
-            Timber.d("mCurosor null ... exiting bindViews");
+            Timber.d("mCursor null ... exiting bindViews");
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
             bylineView.setText("N/A" );

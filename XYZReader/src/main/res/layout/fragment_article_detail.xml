@@ -11,6 +11,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <ImageView
+            android:id="@+id/article_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:adjustViewBounds="true"
+
+            android:scaleType="centerCrop" />
 
 
         <LinearLayout
@@ -26,6 +34,8 @@
             android:paddingLeft="@dimen/detail_inner_horiz_margin"
             android:paddingRight="@dimen/detail_inner_horiz_margin"
             android:paddingTop="@dimen/detail_metabar_vert_padding">
+
+
 
             <TextView
                 android:id="@+id/article_title"

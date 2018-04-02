@@ -2,7 +2,6 @@ package com.example.xyzreader.ui;
 
 
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -13,14 +12,10 @@ import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
+
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
@@ -46,8 +41,8 @@ public class ArticleDetailActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         Timber.d("Executing ArticleDetailActivity onCreate");
-
         setContentView(R.layout.activity_article_detail);
+
         setUpToolBar();
         getSupportLoaderManager().initLoader(0, null, this);
 
@@ -64,7 +59,7 @@ public class ArticleDetailActivity extends AppCompatActivity
     private void setUpToolBar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         if (toolbar != null) {
-            ViewCompat.setElevation(toolbar, 0);
+            ViewCompat.setElevation(toolbar, 8);
             setSupportActionBar(toolbar);
             toolbar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
@@ -74,12 +69,9 @@ public class ArticleDetailActivity extends AppCompatActivity
             });
 
 
-            ActionBar ab = getSupportActionBar();
-            if (ab != null) {
-                ab.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
-                ab.setDisplayHomeAsUpEnabled(true);
-                ab.setDisplayShowHomeEnabled(true);
-            }
+            ActionBar actionBar = getSupportActionBar();
+            actionBar.setTitle(null);
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
 
@@ -110,40 +102,6 @@ public class ArticleDetailActivity extends AppCompatActivity
                 return (mCursor != null) ? mCursor.getCount() : 0;
             }
 
-            @Override
-            public void setPrimaryItem(ViewGroup container, int position, Object object){
-                Timber.d("setPrimaryItem invoked");
-                super.setPrimaryItem(container, position, object);
-                ArticleDetailFragment fragment = (ArticleDetailFragment) object;
-                if (fragment != null) {
-                    final ImageView articleImage = findViewById(R.id.article_image);
-                    Timber.d("Displaying article bitmap");
-                    mCursor.moveToPosition(position);
-                    String photoUrl = mCursor.getString(ArticleLoader.Query.PHOTO_URL);
-                    ImageLoaderHelper.getInstance(container.getContext()).getImageLoader()
-                            .get(photoUrl, new ImageLoader.ImageListener() {
-                                @Override
-                                public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
-                                    Timber.d("Article image loaded");
-                                    Bitmap articleImageBitmap  = imageContainer.getBitmap();
-                                    if ( articleImageBitmap!= null) {
-                                       // Palette p = Palette.generate(mArticleImageBitmap, 12);
-                                       // mMutedColor = p.getDarkMutedColor(0xFF333333);
-                                        articleImage.setImageBitmap(articleImageBitmap);
-                                       // mRootView.findViewById(R.id.meta_bar)
-                                             //   .setBackgroundColor(mMutedColor);
-
-                                    }
-                                }
-
-                                @Override
-                                public void onErrorResponse(VolleyError volleyError) {
-                                    Timber.d("Failed to obtain article image");
-                                }
-                            });
-                }
-
-            }
         });
 
     }
