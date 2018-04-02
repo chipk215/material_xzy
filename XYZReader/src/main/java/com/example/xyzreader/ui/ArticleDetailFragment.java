@@ -10,7 +10,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 
 import android.text.Html;
-import android.text.format.DateUtils;
+
 import android.text.method.LinkMovementMethod;
 
 import android.view.LayoutInflater;
@@ -24,11 +24,9 @@ import com.android.volley.toolbox.ImageLoader;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
+import com.example.xyzreader.utility.DateHelper;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.GregorianCalendar;
+
 
 import timber.log.Timber;
 
@@ -47,15 +45,9 @@ public class ArticleDetailFragment extends Fragment implements
     private View mRootView;
     private int mMutedColor = 0xFF333333;
 
-    private Bitmap mArticleImageBitmap;
+
     private String mPhotoURL;
 
-
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
-    // Use default locale format
-    private SimpleDateFormat outputFormat = new SimpleDateFormat();
-    // Most time functions can only handle 1902 - 2037
-    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -112,16 +104,6 @@ public class ArticleDetailFragment extends Fragment implements
 
 
 
-    private Date parsePublishedDate() {
-        try {
-            String date = mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE);
-            return dateFormat.parse(date);
-        } catch (ParseException ex) {
-            Timber.e(ex);
-            Timber.i("passing today's date");
-            return new Date();
-        }
-    }
 
     private void bindViews() {
         Timber.d("Entering bindViews for mItemId: " + mItemId);
@@ -153,25 +135,14 @@ public class ArticleDetailFragment extends Fragment implements
 
 
             // retrieve published date
-            Date publishedDate = parsePublishedDate();
-            if (!publishedDate.before(START_OF_EPOCH.getTime())) {
-                bylineView.setText(Html.fromHtml(
-                        DateUtils.getRelativeTimeSpanString(
-                                publishedDate.getTime(),
-                                System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                                DateUtils.FORMAT_ABBREV_ALL).toString()
-                                + " by <font color='#ffffff'>"
-                                + mCursor.getString(ArticleLoader.Query.AUTHOR)
-                                + "</font>"));
+            String publishedDate =
+                    DateHelper.getPublishedDate(
+                            mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE));
 
-            } else {
-                // If date is before 1902, just show the string
-                bylineView.setText(Html.fromHtml(
-                        outputFormat.format(publishedDate) + " by <font color='#ffffff'>"
-                        + mCursor.getString(ArticleLoader.Query.AUTHOR)
-                                + "</font>"));
+            bylineView.setText(Html.fromHtml(publishedDate + " by <font color='#ffffff'>"
+                            + mCursor.getString(ArticleLoader.Query.AUTHOR)
+                            + "</font>"));
 
-            }
 
             // get body text
             Timber.d("Request body text");
@@ -252,15 +223,5 @@ public class ArticleDetailFragment extends Fragment implements
         super.onResume();
         Timber.d("Detail Fragment on Resume.. itemId = " + mItemId);
     }
-
-
-    public Bitmap getArticleImageBitmap(){
-        return mArticleImageBitmap;
-    }
-
-    public String getPhotoURL(){
-        return mPhotoURL;
-    }
-
 
 }
