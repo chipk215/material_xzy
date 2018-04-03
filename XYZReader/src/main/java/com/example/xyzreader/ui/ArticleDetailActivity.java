@@ -75,7 +75,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 
 
     private void setUpToolBar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.collapse_toolbar);
         if (toolbar != null) {
             ViewCompat.setElevation(toolbar, 8);
             setSupportActionBar(toolbar);

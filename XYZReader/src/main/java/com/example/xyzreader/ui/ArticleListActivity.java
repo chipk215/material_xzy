@@ -51,7 +51,7 @@ public class ArticleListActivity extends AppCompatActivity implements
 
         setContentView(R.layout.activity_article_list);
 
-        mToolbar =  findViewById(R.id.toolbar);
+        mToolbar =  findViewById(R.id.collapse_toolbar);
         setSupportActionBar(mToolbar);
 
 

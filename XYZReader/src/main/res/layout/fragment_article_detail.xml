@@ -7,14 +7,14 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <RelativeLayout
-        android:id="@+id/draw_insets_frame_layout"
+        android:id="@+id/article_detail_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <ImageView
             android:id="@+id/article_image"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/detail_photo_height"
 
             android:adjustViewBounds="true"
 

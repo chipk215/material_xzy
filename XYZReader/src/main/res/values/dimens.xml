@@ -24,8 +24,10 @@
 
     <dimen name="md_keylines">16dp</dimen>
     <dimen name="article_keylines">72dp</dimen>
-    <dimen name="app_bar_height">256dp</dimen>
+    <dimen name="app_bar_height">128dp</dimen>
     <dimen name="toolbar_elevation">8dp</dimen>
     <dimen name="card_corner_radius">8dp</dimen>
+
+    <dimen name="toolbar_main_top_margin">16dp</dimen>
 
 </resources>
