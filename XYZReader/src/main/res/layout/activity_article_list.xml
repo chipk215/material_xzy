@@ -51,13 +51,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/recycler_view"
-            android:clipToPadding="false"
-            android:paddingLeft="@dimen/list_side_margin"
-            android:paddingRight="@dimen/list_side_margin" />
+        <!-- Include recycler view with animation if API > 21   -->
+        <include layout="@layout/article_recycler_view" />
+
 
     </android.support.v4.widget.SwipeRefreshLayout>
 

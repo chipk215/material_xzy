@@ -3,6 +3,7 @@ package com.example.xyzreader.ui;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -15,6 +16,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
 import android.view.View;
 
 
@@ -136,6 +138,14 @@ public class ArticleDetailActivity extends AppCompatActivity
         mPager = findViewById(R.id.article_pager);
         mPagerAdapter = new ArticlePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
+
+        float dimensionValue = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                1, getResources().getDisplayMetrics());
+
+        Timber.d("dimensionValue: " + dimensionValue);
+        mPager.setPageMargin((int) dimensionValue);
+
+        mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
 
     }
 
