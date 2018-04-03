@@ -3,12 +3,14 @@ package com.example.xyzreader.ui;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 
+import android.support.v7.graphics.Palette;
 import android.text.Html;
 
 import android.text.method.LinkMovementMethod;
@@ -43,7 +45,7 @@ public class ArticleDetailFragment extends Fragment implements
     private Cursor mCursor;
     private long mItemId;
     private View mRootView;
-    private int mMutedColor = 0xFF333333;
+
 
 
     private String mPhotoURL;
@@ -156,11 +158,12 @@ public class ArticleDetailFragment extends Fragment implements
                             Timber.d("Article image loaded");
                             Bitmap articleImageBitmap  = imageContainer.getBitmap();
                             if ( articleImageBitmap!= null) {
-                                // Palette p = Palette.generate(mArticleImageBitmap, 12);
-                                // mMutedColor = p.getDarkMutedColor(0xFF333333);
-                                articleImage.setImageBitmap(articleImageBitmap);
-                                // mRootView.findViewById(R.id.meta_bar)
-                                //   .setBackgroundColor(mMutedColor);
+                                Palette p = Palette.from(articleImageBitmap).maximumColorCount(12).generate();
+                                 int mutedMetaBarColor = p.getDarkMutedColor(getResources()
+                                         .getColor(R.color.meta_bar_default_muted_color));
+                                 articleImage.setImageBitmap(articleImageBitmap);
+                                 mRootView.findViewById(R.id.meta_bar)
+                                   .setBackgroundColor(mutedMetaBarColor);
 
                             }
                         }

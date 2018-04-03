@@ -48,8 +48,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         Timber.d("Entering ArticleDetailActivity onCreate");
         setContentView(R.layout.activity_article_detail);
 
-        //setUpToolBar();
-
         getSupportLoaderManager().initLoader(0, null, this);
 
         if (savedInstanceState == null) {
@@ -59,6 +57,7 @@ public class ArticleDetailActivity extends AppCompatActivity
             }
         }
 
+        setUpToolBar();
         setUpViewPager();
 
         setUpFAB();
@@ -115,9 +114,10 @@ public class ArticleDetailActivity extends AppCompatActivity
 
 
     private void setUpToolBar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.collapse_toolbar);
+        Timber.d("Setup toolbar");
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         if (toolbar != null) {
-            ViewCompat.setElevation(toolbar, 8);
+
             setSupportActionBar(toolbar);
             toolbar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
@@ -125,7 +125,6 @@ public class ArticleDetailActivity extends AppCompatActivity
                     supportFinishAfterTransition();
                 }
             });
-
 
             ActionBar actionBar = getSupportActionBar();
             actionBar.setTitle(null);

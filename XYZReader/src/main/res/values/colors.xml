@@ -28,6 +28,7 @@
     <color name="photo_placeholder">#ccc</color>
 
     <color name="meta_bar_backgroundColor">#333</color>
+    <color name="meta_bar_default_muted_color">#FF333333</color>
 
     <color name="sub_title_textColor">#6000</color>
 
