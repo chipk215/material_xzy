@@ -145,7 +145,7 @@ public class ArticleDetailFragment extends Fragment implements
 
             // get body text
             Timber.d("Request body text");
-            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
+            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)));
             Timber.d("Body text returned");
 
             // get photo

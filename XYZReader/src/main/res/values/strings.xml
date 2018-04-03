@@ -14,5 +14,6 @@
     <string name="author">Author:\u0020\u0020</string>
 
     <string name="article_image">Article Image</string>
+    <string name="article_thumbnail_image">article_thumbnail_image</string>
 
 </resources>
