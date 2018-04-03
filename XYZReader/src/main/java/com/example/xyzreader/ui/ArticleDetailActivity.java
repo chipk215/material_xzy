@@ -19,6 +19,7 @@ import android.view.View;
 
 
 import com.example.xyzreader.R;
+import com.example.xyzreader.adapters.ArticlePagerAdapter;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
 
@@ -37,15 +38,18 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     private ViewPager mPager;
 
+    private ArticlePagerAdapter mPagerAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Timber.d("Executing ArticleDetailActivity onCreate");
+        Timber.d("Entering ArticleDetailActivity onCreate");
         setContentView(R.layout.activity_article_detail);
 
-        setUpToolBar();
+        //setUpToolBar();
+
         getSupportLoaderManager().initLoader(0, null, this);
 
         if (savedInstanceState == null) {
@@ -57,72 +61,12 @@ public class ArticleDetailActivity extends AppCompatActivity
 
         setUpViewPager();
 
-
-        findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mCursor != null) {
-                    String message = formatShareMessage(mCursor);
-                    startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
-                            .setType("text/plain")
-                            .setText(message)
-                            .getIntent(), getString(R.string.action_share)));
-                }
-            }
-        });
-    }
-
-
-
-    private void setUpToolBar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.collapse_toolbar);
-        if (toolbar != null) {
-            ViewCompat.setElevation(toolbar, 8);
-            setSupportActionBar(toolbar);
-            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    supportFinishAfterTransition();
-                }
-            });
-
-
-            ActionBar actionBar = getSupportActionBar();
-            actionBar.setTitle(null);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-    }
-
-    private void setUpViewPager(){
-        mPager = findViewById(R.id.article_pager);
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
-
-        mPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
-            @Override
-            public Fragment getItem(int position) {
-                Timber.d("Pager request item position: " + position);
-                if (mCursor != null){
-                    int currentPosition = mCursor.getPosition();
-
-                    mCursor.moveToPosition(position);
-                    Fragment fragment = ArticleDetailFragment.newInstance(mCursor.getLong(ArticleLoader.Query._ID));
-                    mCursor.moveToPosition(currentPosition);
-                    return fragment;
-
-                }
-                Timber.d("Pager request article but cursor is null");
-                return null;  //TODO throw an exception ?
-            }
-
-            @Override
-            public int getCount() {
-                return (mCursor != null) ? mCursor.getCount() : 0;
-            }
-
-        });
+        setUpFAB();
 
     }
+
+
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
@@ -133,12 +77,12 @@ public class ArticleDetailActivity extends AppCompatActivity
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         Timber.d("onLoadFinished");
         mCursor = cursor;
+        mPagerAdapter.setCursor(cursor);
         mPager.getAdapter().notifyDataSetChanged();
 
         // Select the start ID
         if (mStartId > 0) {
             mCursor.moveToFirst();
-
             while (!mCursor.isAfterLast()) {
                 if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
                     final int position = mCursor.getPosition();
@@ -167,5 +111,48 @@ public class ArticleDetailActivity extends AppCompatActivity
         message += getString(R.string.author);
         message += cursor.getString(ArticleLoader.Query.AUTHOR);
         return message;
+    }
+
+
+    private void setUpToolBar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.collapse_toolbar);
+        if (toolbar != null) {
+            ViewCompat.setElevation(toolbar, 8);
+            setSupportActionBar(toolbar);
+            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    supportFinishAfterTransition();
+                }
+            });
+
+
+            ActionBar actionBar = getSupportActionBar();
+            actionBar.setTitle(null);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    private void setUpViewPager(){
+        mPager = findViewById(R.id.article_pager);
+        mPagerAdapter = new ArticlePagerAdapter(getSupportFragmentManager());
+        mPager.setAdapter(mPagerAdapter);
+
+    }
+
+
+    private void setUpFAB(){
+        findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mCursor != null) {
+                    String message = formatShareMessage(mCursor);
+                    startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
+                            .setType("text/plain")
+                            .setText(message)
+                            .getIntent(), getString(R.string.action_share)));
+                }
+            }
+        });
     }
 }

@@ -1,77 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/scrollParent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <RelativeLayout
-        android:id="@+id/article_detail_layout"
+    <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/scrollParent"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <ImageView
-            android:id="@+id/article_image"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/detail_photo_height"
-
-            android:adjustViewBounds="true"
-
-            android:scaleType="centerCrop" />
-
-
-        <LinearLayout
-            android:id="@+id/meta_bar"
+        <com.example.xyzreader.ui.MaxWidthLinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/article_image"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="@dimen/detail_metabar_vert_padding"
-            android:background="@color/meta_bar_backgroundColor"
-            android:orientation="vertical"
-            android:paddingBottom="@dimen/detail_metabar_vert_padding"
-            android:paddingLeft="@dimen/detail_inner_horiz_margin"
-            android:paddingRight="@dimen/detail_inner_horiz_margin"
-            android:paddingTop="@dimen/detail_metabar_vert_padding">
+            android:layout_gravity="center_horizontal"
+            android:background="#fff"
+            android:elevation="2dp"
+            android:maxWidth="@dimen/detail_card_max_width"
+            android:orientation="vertical">
 
 
-
-            <TextView
-                android:id="@+id/article_title"
-                style="@style/article_text"
+            <LinearLayout
+                android:id="@+id/meta_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-condensed"
-                android:lineSpacingMultiplier="0.9"
-                android:paddingBottom="@dimen/detail_metabar_title_bottom_padding"
-                />
+                android:layout_below="@id/article_image"
+                android:layout_gravity="bottom"
+                android:layout_marginBottom="@dimen/detail_metabar_vert_padding"
+                android:background="@color/meta_bar_backgroundColor"
+                android:orientation="vertical"
+                android:paddingBottom="@dimen/detail_metabar_vert_padding"
+                android:paddingLeft="@dimen/detail_inner_horiz_margin"
+                android:paddingRight="@dimen/detail_inner_horiz_margin"
+                android:paddingTop="@dimen/detail_metabar_vert_padding">
+
+
+                <TextView
+                    android:id="@+id/article_title"
+                    style="@style/article_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:lineSpacingMultiplier="0.9"
+                    android:paddingBottom="@dimen/detail_metabar_title_bottom_padding"
+                    />
+
+                <TextView
+                    android:id="@+id/article_byline"
+                    style="@style/article_byline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/article_byline"
-                style="@style/article_byline"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:id="@+id/article_body"
+                style="?android:attr/textAppearanceMedium"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/meta_bar"
+                android:layout_marginLeft="@dimen/detail_inner_horiz_margin"
+                android:layout_marginRight="@dimen/detail_inner_horiz_margin"
+                android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier"
+                android:paddingBottom="@dimen/detail_body_bottom_margin"
+                android:textColor="@color/cardview_dark_background"
 
-        </LinearLayout>
+                android:maxLines="60"
+                android:ellipsize="marquee"
 
-        <TextView
-            android:id="@+id/article_body"
-            style="?android:attr/textAppearanceMedium"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/meta_bar"
-            android:layout_marginLeft="@dimen/detail_inner_horiz_margin"
-            android:layout_marginRight="@dimen/detail_inner_horiz_margin"
-            android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier"
-            android:paddingBottom="@dimen/detail_body_bottom_margin"
-            android:textColor="@color/cardview_dark_background"
+                android:textSize="@dimen/detail_body_text_size" />
 
-            android:maxLines="60"
-            android:ellipsize="marquee"
+        </com.example.xyzreader.ui.MaxWidthLinearLayout>
 
-            android:textSize="@dimen/detail_body_text_size" />
-
-    </RelativeLayout>
-
-</android.support.v4.widget.NestedScrollView>
+    </android.support.v4.widget.NestedScrollView>
+</android.support.design.widget.CoordinatorLayout>

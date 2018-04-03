@@ -73,7 +73,6 @@ public class ArticleDetailFragment extends Fragment implements
             Timber.d("Detail Fragment onCreate... itemId= " + mItemId);
         }
 
-        setHasOptionsMenu(true);
     }
 
 
@@ -97,8 +96,6 @@ public class ArticleDetailFragment extends Fragment implements
         Timber.d("Entering onCreateView");
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
 
-     //   bindViews();
-
         return mRootView;
     }
 
@@ -118,7 +115,7 @@ public class ArticleDetailFragment extends Fragment implements
         bylineView.setMovementMethod(new LinkMovementMethod());
         TextView bodyView =  mRootView.findViewById(R.id.article_body);
 
-        final ImageView articleImage = mRootView.findViewById(R.id.article_image);
+        final ImageView articleImage = getActivity().findViewById(R.id.article_image);
 
         //bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
