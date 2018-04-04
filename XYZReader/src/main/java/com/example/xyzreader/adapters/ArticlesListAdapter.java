@@ -4,6 +4,7 @@ package com.example.xyzreader.adapters;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -44,6 +45,7 @@ public class ArticlesListAdapter extends RecyclerView.Adapter<ArticlesListAdapte
         mContext = context;
         mInflater = LayoutInflater.from(context);
         mArticleClickListener = listener;
+
     }
 
     @Override
@@ -60,7 +62,8 @@ public class ArticlesListAdapter extends RecyclerView.Adapter<ArticlesListAdapte
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mArticleClickListener.onArticleClick(ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())));
+                mArticleClickListener.onArticleClick(
+                        ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())));
             }
         });
         return vh;

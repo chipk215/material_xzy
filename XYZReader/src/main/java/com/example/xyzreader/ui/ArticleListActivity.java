@@ -1,12 +1,16 @@
 package com.example.xyzreader.ui;
 
 
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -15,6 +19,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.animation.AnimationUtils;
+import android.view.animation.Interpolator;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.adapters.ArticlesListAdapter;
@@ -38,12 +44,26 @@ public class ArticleListActivity extends AppCompatActivity implements
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
 
+    private boolean mAnimateTransition;
+   // private Interpolator mInterpolator;
 
     private boolean mServiceStarted;
+
+    private Activity mThisActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mThisActivity = this;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Apply activity transition
+            mAnimateTransition = true;
+          //  mInterpolator = AnimationUtils.loadInterpolator(mThisActivity, android.R.interpolator.linear_out_slow_in);
+        } else {
+            // Swap without transition
+            mAnimateTransition = false;
+        }
 
         Timber.d("Entering onCreate");
 
@@ -54,8 +74,6 @@ public class ArticleListActivity extends AppCompatActivity implements
         mToolbar =  findViewById(R.id.collapse_toolbar);
         setSupportActionBar(mToolbar);
 
-
-        //final View toolbarContainerView = findViewById(R.id.toolbar_container);
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         // handle user initiated refresh requests
@@ -69,7 +87,7 @@ public class ArticleListActivity extends AppCompatActivity implements
             }
         });
 
-        // revisit- do we want the user to initiate refreshes?
+        // revisit- do we want the user to initiate refreshes? It seems annoying, so no.
         mSwipeRefreshLayout.setEnabled(false);
 
 
@@ -138,17 +156,34 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        ArticlesListAdapter adapter = new ArticlesListAdapter(cursor, this, new ArticlesListAdapter.ArticleClickListener() {
+        ArticlesListAdapter adapter = new ArticlesListAdapter(cursor, this,
+                new ArticlesListAdapter.ArticleClickListener() {
+
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onArticleClick(Uri uri) {
-                startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                if (mAnimateTransition){
+                    startActivity(intent,
+                            ActivityOptions.makeSceneTransitionAnimation(mThisActivity).toBundle());
+
+
+
+                }else {
+                    startActivity(intent);
+                }
             }
         });
         adapter.setHasStableIds(true);
         mRecyclerView.setAdapter(adapter);
         int columnCount = getResources().getInteger(R.integer.list_column_count);
-      //  StaggeredGridLayoutManager sglm =
-      //          new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
+
+        // My interpretation of the Material Design Guidelines recommends using a homogeneous
+        // container for similar items. A simple recyler list view with a thumbnail should suffice
+        // but I simple changed to a grid view. TODO provide reference:
+
+        //  StaggeredGridLayoutManager sglm =
+        //          new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, columnCount));
     }
 
