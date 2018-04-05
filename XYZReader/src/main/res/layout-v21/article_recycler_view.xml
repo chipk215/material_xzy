@@ -4,6 +4,6 @@
     android:id="@+id/recycler_view"
     android:clipToPadding="false"
     android:layoutAnimation="@anim/grid_layout_animation_from_bottom"
-    android:paddingLeft="@dimen/list_side_margin"
-    android:paddingRight="@dimen/list_side_margin"
+    android:paddingLeft="@dimen/recycler_list_start_padding"
+    android:paddingRight="@dimen/recycler_list_end_padding"
     xmlns:android="http://schemas.android.com/apk/res/android" />
