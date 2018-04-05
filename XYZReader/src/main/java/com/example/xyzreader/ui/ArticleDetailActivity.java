@@ -2,9 +2,12 @@ package com.example.xyzreader.ui;
 
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -18,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.TextView;
 
 
 import com.example.xyzreader.R;
@@ -42,10 +46,18 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     private ArticlePagerAdapter mPagerAdapter;
 
+    private String mArticleTitle;
+
+    private String getArticleTitle(){
+        return mArticleTitle;
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mArticleTitle = "";
 
         Timber.d("Entering ArticleDetailActivity onCreate");
         setContentView(R.layout.activity_article_detail);
@@ -88,6 +100,7 @@ public class ArticleDetailActivity extends AppCompatActivity
                 if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
                     final int position = mCursor.getPosition();
                     mPager.setCurrentItem(position, false);
+                    mArticleTitle = mCursor.getString(ArticleLoader.Query.TITLE);
                     break;
                 }
                 mCursor.moveToNext();
@@ -116,10 +129,43 @@ public class ArticleDetailActivity extends AppCompatActivity
 
 
     private void setUpToolBar() {
+        //attribution:  https://stackoverflow.com/a/32724422/9128441
+        final CollapsingToolbarLayout collapsingToolbarLayout =  findViewById(R.id.collapsing_toolbar);
+        AppBarLayout appBarLayout = findViewById(R.id.appbar);
+        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            boolean isShow = true;
+            int scrollRange = -1;
+
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                //TextView hiddenTitle = findViewById(R.id.hidden_title);
+                if (scrollRange == -1) {
+                    scrollRange = appBarLayout.getTotalScrollRange();
+                }
+                if (scrollRange + verticalOffset == 0) {
+
+
+
+                   // hiddenTitle.setText(getArticleTitle());
+                  //  hiddenTitle.setVisibility(View.VISIBLE);
+                 //   collapsingToolbarLayout.setTitle(getArticleTitle());
+                    isShow = true;
+                } else if(isShow) {
+                    collapsingToolbarLayout.setTitle(" ");
+                    isShow = false;
+                  //  hiddenTitle.setVisibility(View.GONE);
+                }
+            }
+        });
+
+
+
+
         Timber.d("Setup toolbar");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         if (toolbar != null) {
 
+           // toolbar.setTitle("Title");
             setSupportActionBar(toolbar);
             toolbar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
@@ -129,7 +175,8 @@ public class ArticleDetailActivity extends AppCompatActivity
             });
 
             ActionBar actionBar = getSupportActionBar();
-            actionBar.setTitle(null);
+            // prevent app title from displaying
+            actionBar.setTitle("");
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }

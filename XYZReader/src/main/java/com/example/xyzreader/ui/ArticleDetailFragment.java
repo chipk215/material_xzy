@@ -2,33 +2,34 @@ package com.example.xyzreader.ui;
 
 import android.database.Cursor;
 import android.graphics.Bitmap;
-
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-
 import android.support.v7.graphics.Palette;
 import android.text.Html;
-
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
-
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
-
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.utility.DateHelper;
-
-
 
 import timber.log.Timber;
 
@@ -42,10 +43,12 @@ public class ArticleDetailFragment extends Fragment implements
 
     public static final String ARG_ITEM_ID = "item_id";
 
+    private static final int TEXT_BLOCK_SIZE = 1000;
+
     private Cursor mCursor;
     private long mItemId;
     private View mRootView;
-
+    private int mCharactersConsumed;
 
 
     private String mPhotoURL;
@@ -74,6 +77,8 @@ public class ArticleDetailFragment extends Fragment implements
             mItemId = getArguments().getLong(ARG_ITEM_ID);
             Timber.d("Detail Fragment onCreate... itemId= " + mItemId);
         }
+
+        mCharactersConsumed = 0;
 
     }
 
@@ -105,33 +110,81 @@ public class ArticleDetailFragment extends Fragment implements
 
 
     private void bindViews() {
+
+        /*  What is taking so long? ... not image loading but text formatting.
+        SimpleDateFormat date =
+                new SimpleDateFormat("dd_MM_yyyy_hh_mm_ss");
+        String logDate = date.format(new Date());
+        Debug.startMethodTracing("sample-" + logDate);
+        */
+
         Timber.d("Entering bindViews for mItemId: " + mItemId);
         if (mRootView == null) {
             Timber.d("Exiting bindViews due to null mRootView");
             return;
         }
 
+
+
         Timber.d("Obtaining view ids");
         TextView titleView =  mRootView.findViewById(R.id.article_title);
         TextView bylineView = mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
-        TextView bodyView =  mRootView.findViewById(R.id.article_body);
+        final TextView bodyView =  mRootView.findViewById(R.id.article_body);
+        final Button readMore = mRootView.findViewById(R.id.read_more);
+
+        // get body text
+        Timber.d("Request body text");
+        final String bodyText = mCursor.getString(ArticleLoader.Query.BODY);
+        final int articleLength = bodyText.length();
+
+
+        readMore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String newText;
+                if ((articleLength - mCharactersConsumed) > TEXT_BLOCK_SIZE){
+                    int startIndex = mCharactersConsumed;
+                    newText = bodyText.substring(startIndex,
+                            startIndex + TEXT_BLOCK_SIZE);
+                    int lastSpaceIndex = newText.lastIndexOf(" ",newText.length());
+
+                    newText = newText.substring(0, lastSpaceIndex);
+                    mCharactersConsumed+= newText.length();
+
+                }else{
+                    newText = bodyText.substring(mCharactersConsumed);
+                    readMore.setVisibility(View.INVISIBLE);
+                }
+
+
+                int nextSpace = newText.indexOf(' ',1);
+                if (nextSpace == -1){
+                    nextSpace = 1;
+                }
+
+                appendColoredText(bodyView,newText.substring(0,nextSpace),Color.GREEN);
+
+
+                String remainder = "&nbsp" + newText.substring(nextSpace) ;
+                bodyView.append(Html.fromHtml(remainder));
+
+            }
+        });
+
+
+        final LinearLayout metaBar = mRootView.findViewById(R.id.meta_bar);
 
         final ImageView articleImage = getActivity().findViewById(R.id.article_image);
 
-        //bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
+        // Seems to be appropriate typeface for articles: http://www.1001fonts.com/rosario-font.html
+        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
         if (mCursor != null) {
 
-            Timber.d("Valid mCursor, binding data to views");
-
-            mRootView.setAlpha(0);
-            mRootView.setVisibility(View.VISIBLE);
-            mRootView.animate().alpha(1);
-
             // retrieve title
             titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-
 
             // retrieve published date
             String publishedDate =
@@ -143,9 +196,22 @@ public class ArticleDetailFragment extends Fragment implements
                             + "</font>"));
 
 
-            // get body text
-            Timber.d("Request body text");
-            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)));
+            Spanned htmlBody;
+            if (articleLength > TEXT_BLOCK_SIZE){
+                String bodyString = mCursor.getString(ArticleLoader.Query.BODY).substring(0,TEXT_BLOCK_SIZE);
+                int lastSpaceIndex = bodyString.lastIndexOf(" ",TEXT_BLOCK_SIZE-1);
+                mCharactersConsumed = lastSpaceIndex;
+
+                htmlBody = Html.fromHtml(bodyString.substring(0,lastSpaceIndex) );
+            }else{
+                htmlBody = Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).substring(0,TEXT_BLOCK_SIZE));
+                // use invisible to keep bottom padding
+                readMore.setVisibility(View.INVISIBLE);
+                readMore.setEnabled(false);
+            }
+
+            bodyView.setText(htmlBody);
+
             Timber.d("Body text returned");
 
             // get photo
@@ -162,8 +228,8 @@ public class ArticleDetailFragment extends Fragment implements
                                  int mutedMetaBarColor = p.getDarkMutedColor(getResources()
                                          .getColor(R.color.meta_bar_default_muted_color));
                                  articleImage.setImageBitmap(articleImageBitmap);
-                                 mRootView.findViewById(R.id.meta_bar)
-                                   .setBackgroundColor(mutedMetaBarColor);
+                                 metaBar.setBackgroundColor(mutedMetaBarColor);
+
 
                             }
                         }
@@ -182,6 +248,9 @@ public class ArticleDetailFragment extends Fragment implements
             bylineView.setText("N/A" );
             bodyView.setText("N/A");
         }
+
+        Timber.d("Exiting bindviews for mItemId: " + mItemId);
+      /*  Debug.stopMethodTracing();  */
     }
 
     @NonNull
@@ -222,6 +291,15 @@ public class ArticleDetailFragment extends Fragment implements
     public void onResume(){
         super.onResume();
         Timber.d("Detail Fragment on Resume.. itemId = " + mItemId);
+    }
+
+    private static void appendColoredText(TextView tv, String text, int color) {
+        int start = tv.getText().length();
+        tv.append(text);
+        int end = tv.getText().length();
+
+        Spannable spannableText = (Spannable) tv.getText();
+        spannableText.setSpan(new ForegroundColorSpan(color), start, end, 0);
     }
 
 }
