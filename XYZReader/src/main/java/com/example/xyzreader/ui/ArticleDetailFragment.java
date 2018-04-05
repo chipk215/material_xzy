@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -43,7 +44,7 @@ public class ArticleDetailFragment extends Fragment implements
 
     public static final String ARG_ITEM_ID = "item_id";
 
-    private static final int TEXT_BLOCK_SIZE = 1000;
+    private static final int TEXT_BLOCK_SIZE = 2000;
 
     private Cursor mCursor;
     private long mItemId;
@@ -164,7 +165,7 @@ public class ArticleDetailFragment extends Fragment implements
                     nextSpace = 1;
                 }
 
-                appendColoredText(bodyView,newText.substring(0,nextSpace),Color.GREEN);
+                appendColoredText(bodyView,newText.substring(0,nextSpace),Color.MAGENTA);
 
 
                 String remainder = "&nbsp" + newText.substring(nextSpace) ;
@@ -229,6 +230,8 @@ public class ArticleDetailFragment extends Fragment implements
                                          .getColor(R.color.meta_bar_default_muted_color));
                                  articleImage.setImageBitmap(articleImageBitmap);
                                  metaBar.setBackgroundColor(mutedMetaBarColor);
+                                Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
+                                toolbar.setBackgroundColor(mutedMetaBarColor);
 
 
                             }
