@@ -11,6 +11,20 @@
     <dimen name="recycler_list_end_padding">4dp</dimen>
 
     <!-- Detail Activity Dimensions -->
+    <dimen name="detail_app_bar_height">300dp</dimen>
+    <dimen name="max_width_linear_elevation">2dp</dimen>
+    <dimen name="detail_card_max_width">10000dp</dimen> <!-- force match_parent -->
+    <dimen name="meta_bar_bottom_margin">16dp</dimen>
+    <dimen name="meta_bar_top_padding">16dp</dimen>
+    <dimen name="meta_bar_bottom_padding">16dp</dimen>
+    <dimen name="meta_bar_horizontal_padding">16dp</dimen>
+    <dimen name="meta_bar_title_bottom_padding">4dp</dimen>
+    <dimen name="article_body_horizontal_margin">16dp</dimen>
+    <dimen name="read_more_button_top_padding">24dp</dimen>
+    <dimen name="read_more_button_start_padding">16dp</dimen>
+    <dimen name="read_more_button_bottom_padding">96dp</dimen>
+    <dimen name="read_more_button_text_size">18sp</dimen>
+
 
 
     <!-- FAB Dimensions -->

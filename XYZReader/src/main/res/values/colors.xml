@@ -32,4 +32,6 @@
 
     <color name="sub_title_textColor">#6000</color>
 
+    <color name="max_width_linear_bgColor">#fff</color>
+
 </resources>
