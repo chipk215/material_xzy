@@ -181,11 +181,9 @@ public class ArticleListActivity extends AppCompatActivity implements
         int columnCount = getResources().getInteger(R.integer.list_column_count);
 
         // My interpretation of the Material Design Guidelines recommends using a homogeneous
-        // container for similar items. A simple recyler list view with a thumbnail should suffice
-        // but I simple changed to a grid view. TODO provide reference:
-
-        //  StaggeredGridLayoutManager sglm =
-        //          new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
+        // container for similar items. A simple recycler list view with a thumbnail should suffice
+        // but I simple changed to a grid view.
+        // reference: https://material.io/guidelines/components/cards.html#cards-usage
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, columnCount));
     }
 

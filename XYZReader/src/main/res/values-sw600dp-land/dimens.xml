@@ -1,0 +1,4 @@
+<resources>
+    <!-- detail -->
+    <dimen name="detail_app_bar_height">400dp</dimen>
+</resources>

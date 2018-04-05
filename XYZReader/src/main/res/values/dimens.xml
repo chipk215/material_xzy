@@ -7,12 +7,12 @@
     <dimen name="logo_height">80dp</dimen>
     <dimen name="logo_top_margin">16dp</dimen>
     <dimen name="logo_start_margin">16dp</dimen>
-    <dimen name="recycler_list_start_padding">4dp</dimen>
-    <dimen name="recycler_list_end_padding">4dp</dimen>
+    <dimen name="recycler_list_padding">4dp</dimen>
     <dimen name="card_item_margin">16dp</dimen>
     <dimen name="article_title_padding">16dp</dimen>
     <dimen name="article_title_btm_padding">4dp</dimen>
     <integer name="list_column_count">2</integer>
+    <dimen name="card_corner_radius">2dp</dimen>
 
     <!-- Detail Activity Dimensions -->
     <dimen name="detail_app_bar_height">300dp</dimen>
@@ -28,6 +28,8 @@
     <dimen name="read_more_button_start_padding">16dp</dimen>
     <dimen name="read_more_button_bottom_padding">96dp</dimen>
     <dimen name="read_more_button_text_size">18sp</dimen>
+
+    <!-- the article photo height corresponds to the app bar height -->
     <dimen name="article_image_height">@dimen/detail_app_bar_height</dimen>
 
 

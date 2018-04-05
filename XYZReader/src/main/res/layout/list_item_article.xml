@@ -9,7 +9,7 @@
     android:layout_marginBottom="@dimen/card_item_margin"
 
     card_view:cardUseCompatPadding="true"
-    card_view:cardCornerRadius="card_corner_radius"
+    card_view:cardCornerRadius="@dimen/card_corner_radius"
     android:clickable="true"
     android:focusable="true"
     >

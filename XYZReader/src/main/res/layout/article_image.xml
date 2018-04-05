@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/article_image_height"
     android:contentDescription="@string/article_image"
+    android:src="@mipmap/ic_launcher"
     android:fitsSystemWindows="true"
     android:scaleType="centerCrop"
     app:layout_collapseMode="parallax"

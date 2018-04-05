@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+    <!-- detail -->
+    <dimen name="detail_app_bar_height">260dp</dimen>
+    <dimen name="recycler_list_padding">64dp</dimen>
+    <integer name="list_column_count">3</integer>
+    <dimen name="detail_card_max_width">704dp</dimen>
+
+
+</resources>
