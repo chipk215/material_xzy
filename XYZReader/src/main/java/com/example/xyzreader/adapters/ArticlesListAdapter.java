@@ -37,7 +37,7 @@ public class ArticlesListAdapter extends RecyclerView.Adapter<ArticlesListAdapte
     private final ArticleClickListener mArticleClickListener;
 
     public interface ArticleClickListener {
-        void onArticleClick(Uri uri);
+        void onArticleClick(View view,Uri uri);
     }
 
     public ArticlesListAdapter(Cursor cursor, Context context, ArticleClickListener listener ) {
@@ -62,7 +62,7 @@ public class ArticlesListAdapter extends RecyclerView.Adapter<ArticlesListAdapte
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mArticleClickListener.onArticleClick(
+                mArticleClickListener.onArticleClick(view,
                         ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())));
             }
         });

@@ -19,6 +19,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 
@@ -146,13 +147,17 @@ public class ArticleListActivity extends AppCompatActivity implements
 
             @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @Override
-            public void onArticleClick(Uri uri) {
+            public void onArticleClick(View view, Uri uri) {
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                DynamicHeightNetworkImageView imageView = view.findViewById(R.id.thumbnail);
                 if (mAnimateTransition){
-                    startActivity(intent,
-                            ActivityOptions.makeSceneTransitionAnimation(mThisActivity).toBundle());
 
+                    Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(
+                            mThisActivity,
+                            imageView,
+                            imageView.getTransitionName()).toBundle();
 
+                    startActivity(intent, bundle);
 
                 }else {
                     startActivity(intent);

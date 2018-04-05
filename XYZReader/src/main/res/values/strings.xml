@@ -17,7 +17,7 @@
     <string name="article_thumbnail_image">article_thumbnail_image</string>
 
     <string name="previous">Continue Reading...</string>
-
+    <string name="transition_photo">transition_photo</string>
 
 
 </resources>
