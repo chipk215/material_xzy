@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ImageView android:id="@+id/article_image"
     android:layout_width="match_parent"
-    android:layout_height="300dp"
+    android:layout_height="@dimen/article_image_height"
     android:contentDescription="@string/article_image"
     android:fitsSystemWindows="true"
     android:scaleType="centerCrop"
