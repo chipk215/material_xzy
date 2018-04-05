@@ -55,6 +55,8 @@ public class ArticleListActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setContentView(R.layout.activity_article_list);
+
         mThisActivity = this;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Apply activity transition
@@ -65,33 +67,16 @@ public class ArticleListActivity extends AppCompatActivity implements
             mAnimateTransition = false;
         }
 
-        Timber.d("Entering onCreate");
 
-        Stetho.initializeWithDefaults(this);
-
-        setContentView(R.layout.activity_article_list);
+        //Stetho.initializeWithDefaults(this);
 
         mToolbar =  findViewById(R.id.collapse_toolbar);
         setSupportActionBar(mToolbar);
 
+        initRefreshLayout();
 
-        mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
-        // handle user initiated refresh requests
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                // if a refresh is already in progress do not start another one
-                if (!mServiceStarted) {
-                    refresh();
-                }
-            }
-        });
+        initRecyclerView();
 
-        // revisit- do we want the user to initiate refreshes? It seems annoying, so no.
-        mSwipeRefreshLayout.setEnabled(false);
-
-
-        mRecyclerView =  findViewById(R.id.recycler_view);
         getSupportLoaderManager().initLoader(0, null, this);
 
         if (savedInstanceState == null) {
@@ -176,6 +161,18 @@ public class ArticleListActivity extends AppCompatActivity implements
         });
         adapter.setHasStableIds(true);
         mRecyclerView.setAdapter(adapter);
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mRecyclerView.setAdapter(null);
+    }
+
+
+
+    private void initRecyclerView(){
+        mRecyclerView =  findViewById(R.id.recycler_view);
         int columnCount = getResources().getInteger(R.integer.list_column_count);
 
         // My interpretation of the Material Design Guidelines recommends using a homogeneous
@@ -187,9 +184,23 @@ public class ArticleListActivity extends AppCompatActivity implements
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, columnCount));
     }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mRecyclerView.setAdapter(null);
+
+    private void initRefreshLayout(){
+
+        mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        // handle user initiated refresh requests
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // if a refresh is already in progress do not start another one
+                if (!mServiceStarted) {
+                    refresh();
+                }
+            }
+        });
+
+        // revisit- do we want the user to initiate refreshes? It seems annoying, so no.
+        mSwipeRefreshLayout.setEnabled(false);
     }
 
 
