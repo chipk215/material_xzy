@@ -1,39 +1,20 @@
 package com.example.xyzreader.ui;
 
 
-import android.content.Intent;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.app.ShareCompat;
-import android.support.v4.app.SharedElementCallback;
 import android.support.v4.content.Loader;
-import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
-
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.adapters.ArticlePagerAdapter;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
-
-import java.util.List;
-import java.util.Map;
 
 import timber.log.Timber;
 
@@ -53,6 +34,8 @@ public class ArticleDetailActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ActivityCompat.postponeEnterTransition(this);
+
         Timber.d("Entering ArticleDetailActivity onCreate");
         setContentView(R.layout.activity_article_detail);
 
@@ -65,11 +48,7 @@ public class ArticleDetailActivity extends AppCompatActivity
             }
         }
 
-
         setUpViewPager();
-
-
-
     }
 
 
@@ -101,6 +80,7 @@ public class ArticleDetailActivity extends AppCompatActivity
         }
     }
 
+
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
         mCursor = null;
@@ -108,18 +88,10 @@ public class ArticleDetailActivity extends AppCompatActivity
     }
 
 
-
-
-
-
-
-
     private void setUpViewPager(){
         mPager = findViewById(R.id.article_pager);
         mPagerAdapter = new ArticlePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
-
-
 
         float dimensionValue = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 1, getResources().getDisplayMetrics());
@@ -131,8 +103,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
 
     }
-
-
 
 }
 

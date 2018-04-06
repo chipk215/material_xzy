@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.ShareCompat;
@@ -53,9 +54,6 @@ public class ArticleDetailFragment extends Fragment implements
     private static final int TEXT_BLOCK_SIZE = 2000;
 
     private Cursor mCursor;
-
-
-
     private long mItemId;
     private View mRootView;
     private int mCharactersConsumed;
@@ -134,7 +132,7 @@ public class ArticleDetailFragment extends Fragment implements
                 @Override
                 public void onClick(View v) {
                     Timber.d("handling tool bar nav click");
-                    ((AppCompatActivity)getActivity()).supportFinishAfterTransition();
+                    getActivity().supportFinishAfterTransition();
                 }
             });
 
@@ -309,6 +307,7 @@ public class ArticleDetailFragment extends Fragment implements
         }
 
         bindViews();
+        ActivityCompat.startPostponedEnterTransition(getActivity());
     }
 
     @Override
