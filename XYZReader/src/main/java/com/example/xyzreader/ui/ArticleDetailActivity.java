@@ -13,6 +13,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.ShareCompat;
+import android.support.v4.app.SharedElementCallback;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
@@ -20,7 +21,9 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 
@@ -28,6 +31,9 @@ import com.example.xyzreader.R;
 import com.example.xyzreader.adapters.ArticlePagerAdapter;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
+
+import java.util.List;
+import java.util.Map;
 
 import timber.log.Timber;
 
@@ -48,9 +54,17 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     private String mArticleTitle;
 
+    private boolean mIsReturning;
+
     private String getArticleTitle(){
         return mArticleTitle;
     }
+
+
+
+
+
+    private ArticleDetailFragment mCurrentDetailsFragment;
 
 
     @Override
@@ -116,6 +130,17 @@ public class ArticleDetailActivity extends AppCompatActivity
     }
 
 
+    @Override
+    public void onBackPressed(){
+        Timber.d("Back button pressed");
+
+        int count = getFragmentManager().getBackStackEntryCount();
+
+        super.onBackPressed();
+
+    }
+
+
     private String formatShareMessage(Cursor cursor){
         String message = getString(R.string.share_message);
         message += System.getProperty("line.separator") + System.getProperty("line.separator");
@@ -129,6 +154,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 
 
     private void setUpToolBar() {
+        /*
         //attribution:  https://stackoverflow.com/a/32724422/9128441
         final CollapsingToolbarLayout collapsingToolbarLayout =  findViewById(R.id.collapsing_toolbar);
         AppBarLayout appBarLayout = findViewById(R.id.appbar);
@@ -158,7 +184,7 @@ public class ArticleDetailActivity extends AppCompatActivity
             }
         });
 
-
+*/
 
 
         Timber.d("Setup toolbar");
@@ -170,6 +196,7 @@ public class ArticleDetailActivity extends AppCompatActivity
             toolbar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Timber.d("handling tool bar nav click");
                     supportFinishAfterTransition();
                 }
             });

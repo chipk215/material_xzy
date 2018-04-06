@@ -19,6 +19,7 @@ import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -44,23 +45,23 @@ public class ArticleDetailFragment extends Fragment implements
 
     public static final String ARG_ITEM_ID = "item_id";
 
+    // Paged article text size
     private static final int TEXT_BLOCK_SIZE = 2000;
 
     private Cursor mCursor;
     private long mItemId;
     private View mRootView;
     private int mCharactersConsumed;
-
-
     private String mPhotoURL;
+    private TextView mBodyView;
+    private Button mReadMore;
 
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public ArticleDetailFragment() {
-    }
+    public ArticleDetailFragment() {}
 
     public static ArticleDetailFragment newInstance(long itemId) {
         Bundle arguments = new Bundle();
@@ -78,7 +79,6 @@ public class ArticleDetailFragment extends Fragment implements
             mItemId = getArguments().getLong(ARG_ITEM_ID);
             Timber.d("Detail Fragment onCreate... itemId= " + mItemId);
         }
-
         mCharactersConsumed = 0;
 
     }
@@ -103,9 +103,10 @@ public class ArticleDetailFragment extends Fragment implements
 
         Timber.d("Entering onCreateView");
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-
         return mRootView;
     }
+
+
 
 
 
@@ -126,13 +127,11 @@ public class ArticleDetailFragment extends Fragment implements
         }
 
 
-
-        Timber.d("Obtaining view ids");
         TextView titleView =  mRootView.findViewById(R.id.article_title);
         TextView bylineView = mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
-        final TextView bodyView =  mRootView.findViewById(R.id.article_body);
-        final Button readMore = mRootView.findViewById(R.id.read_more);
+        mBodyView =  mRootView.findViewById(R.id.article_body);
+        mReadMore = mRootView.findViewById(R.id.read_more);
 
         // get body text
         Timber.d("Request body text");
@@ -140,37 +139,10 @@ public class ArticleDetailFragment extends Fragment implements
         final int articleLength = bodyText.length();
 
 
-        readMore.setOnClickListener(new View.OnClickListener() {
+        mReadMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                String newText;
-                if ((articleLength - mCharactersConsumed) > TEXT_BLOCK_SIZE){
-                    int startIndex = mCharactersConsumed;
-                    newText = bodyText.substring(startIndex,
-                            startIndex + TEXT_BLOCK_SIZE);
-                    int lastSpaceIndex = newText.lastIndexOf(" ",newText.length());
-
-                    newText = newText.substring(0, lastSpaceIndex);
-                    mCharactersConsumed+= newText.length();
-
-                }else{
-                    newText = bodyText.substring(mCharactersConsumed);
-                    readMore.setVisibility(View.INVISIBLE);
-                }
-
-
-                int nextSpace = newText.indexOf(' ',1);
-                if (nextSpace == -1){
-                    nextSpace = 1;
-                }
-
-                appendColoredText(bodyView,newText.substring(0,nextSpace),Color.MAGENTA);
-
-
-                String remainder = "&nbsp" + newText.substring(nextSpace) ;
-                bodyView.append(Html.fromHtml(remainder));
-
+                processArticleText(articleLength, bodyText);
             }
         });
 
@@ -180,7 +152,7 @@ public class ArticleDetailFragment extends Fragment implements
         final ImageView articleImage = getActivity().findViewById(R.id.article_image);
 
         // Seems to be appropriate typeface for articles: http://www.1001fonts.com/rosario-font.html
-        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
+        mBodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
         if (mCursor != null) {
 
@@ -205,13 +177,13 @@ public class ArticleDetailFragment extends Fragment implements
 
                 htmlBody = Html.fromHtml(bodyString.substring(0,lastSpaceIndex) );
             }else{
-                htmlBody = Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).substring(0,TEXT_BLOCK_SIZE));
+                htmlBody = Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY));
                 // use invisible to keep bottom padding
-                readMore.setVisibility(View.INVISIBLE);
-                readMore.setEnabled(false);
+                mReadMore.setVisibility(View.INVISIBLE);
+                mReadMore.setEnabled(false);
             }
 
-            bodyView.setText(htmlBody);
+            mBodyView.setText(htmlBody);
 
             Timber.d("Body text returned");
 
@@ -223,16 +195,20 @@ public class ArticleDetailFragment extends Fragment implements
                         @Override
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
                             Timber.d("Article image loaded");
-                            Bitmap articleImageBitmap  = imageContainer.getBitmap();
+                            final Bitmap articleImageBitmap  = imageContainer.getBitmap();
                             if ( articleImageBitmap!= null) {
-                                Palette p = Palette.from(articleImageBitmap).maximumColorCount(12).generate();
-                                 int mutedMetaBarColor = p.getDarkMutedColor(getResources()
-                                         .getColor(R.color.meta_bar_default_muted_color));
-                                 articleImage.setImageBitmap(articleImageBitmap);
-                                 metaBar.setBackgroundColor(mutedMetaBarColor);
-                                Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
-                                toolbar.setBackgroundColor(mutedMetaBarColor);
 
+                                Palette.from(articleImageBitmap).maximumColorCount(12).generate(new Palette.PaletteAsyncListener() {
+                                    @Override
+                                    public void onGenerated(@NonNull Palette palette) {
+                                        int mutedMetaBarColor = palette.getDarkMutedColor(getResources()
+                                                .getColor(R.color.meta_bar_default_muted_color));
+                                        articleImage.setImageBitmap(articleImageBitmap);
+                                        metaBar.setBackgroundColor(mutedMetaBarColor);
+                                        Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
+                                        toolbar.setBackgroundColor(mutedMetaBarColor);
+                                    }
+                                });
 
                             }
                         }
@@ -249,7 +225,7 @@ public class ArticleDetailFragment extends Fragment implements
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
             bylineView.setText("N/A" );
-            bodyView.setText("N/A");
+            mBodyView.setText("N/A");
         }
 
         Timber.d("Exiting bindviews for mItemId: " + mItemId);
@@ -303,6 +279,46 @@ public class ArticleDetailFragment extends Fragment implements
 
         Spannable spannableText = (Spannable) tv.getText();
         spannableText.setSpan(new ForegroundColorSpan(color), start, end, 0);
+    }
+
+    private void processArticleText(int articleLength, String bodyText){
+        String newText;
+        if ((articleLength - mCharactersConsumed) > TEXT_BLOCK_SIZE){
+            // There is more article text to process
+            int startIndex = mCharactersConsumed;
+            newText = bodyText.substring(startIndex,
+                    startIndex + TEXT_BLOCK_SIZE);
+
+            // Don't split a word, find the last occurring space in the new text
+            int newTextLength = newText.length();
+            int lastSpaceIndex = newText.lastIndexOf(" ",newTextLength);
+            if (lastSpaceIndex == -1){
+                lastSpaceIndex = newTextLength;
+            }
+
+            newText = newText.substring(0, lastSpaceIndex);
+            mCharactersConsumed+= newText.length();
+
+        }else{
+            // This is the last block of article text
+            newText = bodyText.substring(mCharactersConsumed);
+            mReadMore.setVisibility(View.INVISIBLE);
+        }
+
+
+        int endOfFirstWordIndex = newText.indexOf(' ',1);
+        if (endOfFirstWordIndex == -1){
+            endOfFirstWordIndex = 1;
+        }
+
+        // Color the first word to help the reader locate the start of new text
+        appendColoredText(mBodyView,newText.substring(0,endOfFirstWordIndex),
+                getResources().getColor(R.color.first_wordColor));
+
+
+        String remainder = "&nbsp" + newText.substring(endOfFirstWordIndex) ;
+        mBodyView.append(Html.fromHtml(remainder));
+
     }
 
 }

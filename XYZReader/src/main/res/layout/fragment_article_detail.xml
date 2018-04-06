@@ -74,7 +74,7 @@
                     android:paddingStart="@dimen/read_more_button_start_padding"
                     android:paddingBottom="@dimen/read_more_button_bottom_padding"
                     android:text="@string/continue_reading"
-                    android:textColor="?android:attr/colorActivatedHighlight"
+                    android:textColor="@color/cont_reading_color"
                     android:textSize="@dimen/read_more_button_text_size"
                     android:textStyle="italic" />
 

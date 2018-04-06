@@ -34,4 +34,7 @@
 
     <color name="max_width_linear_bgColor">#fff</color>
 
+    <color name="first_wordColor">@android:color/holo_orange_dark</color>
+    <color name="cont_reading_color">@android:color/holo_orange_dark</color>
+
 </resources>
