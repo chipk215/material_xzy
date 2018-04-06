@@ -65,10 +65,10 @@ public class ArticleDetailActivity extends AppCompatActivity
             }
         }
 
-        setUpToolBar();
+
         setUpViewPager();
 
-        setUpFAB();
+
 
     }
 
@@ -109,63 +109,15 @@ public class ArticleDetailActivity extends AppCompatActivity
 
 
 
-    private String formatShareMessage(Cursor cursor){
-        String message = getString(R.string.share_message);
-        message += System.getProperty("line.separator") + System.getProperty("line.separator");
-        message += getString(R.string.title);
-        message += cursor.getString(ArticleLoader.Query.TITLE);
-        message += System.getProperty("line.separator") + System.getProperty("line.separator");
-        message += getString(R.string.author);
-        message += cursor.getString(ArticleLoader.Query.AUTHOR);
-        return message;
-    }
 
 
-    private void setUpToolBar() {
 
-        Timber.d("Setup toolbar");
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        if (toolbar != null) {
 
-            setSupportActionBar(toolbar);
-            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Timber.d("handling tool bar nav click");
-                    supportFinishAfterTransition();
-                }
-            });
-
-            ActionBar actionBar = getSupportActionBar();
-            // prevent app title from displaying
-            actionBar.setTitle("");
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-    }
 
     private void setUpViewPager(){
         mPager = findViewById(R.id.article_pager);
         mPagerAdapter = new ArticlePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
-
-
-        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                Timber.d("onPageSelected: " + position);
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int position) {
-
-            }
-        });
-
 
 
 
@@ -181,20 +133,7 @@ public class ArticleDetailActivity extends AppCompatActivity
     }
 
 
-    private void setUpFAB(){
-        findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mCursor != null) {
-                    String message = formatShareMessage(mCursor);
-                    startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
-                            .setType("text/plain")
-                            .setText(message)
-                            .getIntent(), getString(R.string.action_share)));
-                }
-            }
-        });
-    }
+
 }
 
 

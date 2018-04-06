@@ -1,5 +1,6 @@
 package com.example.xyzreader.ui;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -8,7 +9,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.content.Loader;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
@@ -109,10 +113,52 @@ public class ArticleDetailFragment extends Fragment implements
 
         Timber.d("Entering onCreateView");
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
+
+        setUpToolBar();
+
+        setUpFAB();
+
         return mRootView;
     }
 
 
+
+    private void setUpToolBar() {
+
+        Timber.d("Setup toolbar");
+        Toolbar toolbar = (Toolbar) mRootView.findViewById(R.id.toolbar);
+        if (toolbar != null) {
+
+            ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Timber.d("handling tool bar nav click");
+                    ((AppCompatActivity)getActivity()).supportFinishAfterTransition();
+                }
+            });
+
+            ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+            // prevent app title from displaying
+            actionBar.setTitle("");
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+
+    private void setUpFAB(){
+        mRootView.findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mCursor != null) {
+                    String message = formatShareMessage(mCursor);
+                    startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(getActivity())
+                            .setText(message)
+                            .getIntent(), getString(R.string.action_share)));
+                }
+            }
+        });
+    }
 
 
     private void bindViews() {
@@ -153,7 +199,7 @@ public class ArticleDetailFragment extends Fragment implements
 
         final LinearLayout metaBar = mRootView.findViewById(R.id.meta_bar);
 
-        final ImageView articleImage = getActivity().findViewById(R.id.article_image);
+        final ImageView articleImage = mRootView.findViewById(R.id.article_image);
 
         // Seems to be appropriate typeface for articles: http://www.1001fonts.com/rosario-font.html
         mBodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
@@ -254,7 +300,7 @@ public class ArticleDetailFragment extends Fragment implements
             return;
         }
 
-        Timber.d("onLoadFinished Cursor valid in detail fragment with itemID= " + mItemId);
+        Timber.d("onLoadFinished Cursor valid in detail fragment with itemID= %s", mItemId);
         mCursor = cursor;
         if (mCursor != null && !mCursor.moveToFirst()) {
             Timber.e( "Error reading item detail cursor");
@@ -334,15 +380,16 @@ public class ArticleDetailFragment extends Fragment implements
     }
 
 
-    public void updateArticleImage(){
-        Timber.d("updateArticleImage invoked");
-        if (mArticleImageBitmap != null){
-            Timber.d("Updating article image");
-            Timber.d("Fragment's photoURL= " + mPhotoURL);
-            final ImageView articleImage = getActivity().findViewById(R.id.article_image);
-            articleImage.setImageBitmap(mArticleImageBitmap);
 
-        }
+    private String formatShareMessage(Cursor cursor){
+        String message = getString(R.string.share_message);
+        message += System.getProperty("line.separator") + System.getProperty("line.separator");
+        message += getString(R.string.title);
+        message += cursor.getString(ArticleLoader.Query.TITLE);
+        message += System.getProperty("line.separator") + System.getProperty("line.separator");
+        message += getString(R.string.author);
+        message += cursor.getString(ArticleLoader.Query.AUTHOR);
+        return message;
     }
 
 
