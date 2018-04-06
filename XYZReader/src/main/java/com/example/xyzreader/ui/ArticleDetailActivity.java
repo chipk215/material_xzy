@@ -45,33 +45,13 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     private Cursor mCursor;
     private long mStartId;
-
-    private long mSelectedItemId;
-
     private ViewPager mPager;
-
     private ArticlePagerAdapter mPagerAdapter;
-
-    private String mArticleTitle;
-
-    private boolean mIsReturning;
-
-    private String getArticleTitle(){
-        return mArticleTitle;
-    }
-
-
-
-
-
-    private ArticleDetailFragment mCurrentDetailsFragment;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mArticleTitle = "";
 
         Timber.d("Entering ArticleDetailActivity onCreate");
         setContentView(R.layout.activity_article_detail);
@@ -81,7 +61,7 @@ public class ArticleDetailActivity extends AppCompatActivity
         if (savedInstanceState == null) {
             if (getIntent() != null && getIntent().getData() != null) {
                 mStartId = ItemsContract.Items.getItemId(getIntent().getData());
-                mSelectedItemId = mStartId;
+
             }
         }
 
@@ -91,8 +71,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         setUpFAB();
 
     }
-
-
 
 
     @Override
@@ -114,7 +92,7 @@ public class ArticleDetailActivity extends AppCompatActivity
                 if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
                     final int position = mCursor.getPosition();
                     mPager.setCurrentItem(position, false);
-                    mArticleTitle = mCursor.getString(ArticleLoader.Query.TITLE);
+
                     break;
                 }
                 mCursor.moveToNext();
@@ -130,16 +108,6 @@ public class ArticleDetailActivity extends AppCompatActivity
     }
 
 
-    @Override
-    public void onBackPressed(){
-        Timber.d("Back button pressed");
-
-        int count = getFragmentManager().getBackStackEntryCount();
-
-        super.onBackPressed();
-
-    }
-
 
     private String formatShareMessage(Cursor cursor){
         String message = getString(R.string.share_message);
@@ -154,7 +122,85 @@ public class ArticleDetailActivity extends AppCompatActivity
 
 
     private void setUpToolBar() {
-        /*
+
+        Timber.d("Setup toolbar");
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if (toolbar != null) {
+
+            setSupportActionBar(toolbar);
+            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Timber.d("handling tool bar nav click");
+                    supportFinishAfterTransition();
+                }
+            });
+
+            ActionBar actionBar = getSupportActionBar();
+            // prevent app title from displaying
+            actionBar.setTitle("");
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    private void setUpViewPager(){
+        mPager = findViewById(R.id.article_pager);
+        mPagerAdapter = new ArticlePagerAdapter(getSupportFragmentManager());
+        mPager.setAdapter(mPagerAdapter);
+
+
+        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                Timber.d("onPageSelected: " + position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int position) {
+
+            }
+        });
+
+
+
+
+        float dimensionValue = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                1, getResources().getDisplayMetrics());
+
+        Timber.d("dimensionValue: " + dimensionValue);
+        mPager.setPageMargin((int) dimensionValue);
+
+        //TODO Fix this
+        mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
+
+    }
+
+
+    private void setUpFAB(){
+        findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mCursor != null) {
+                    String message = formatShareMessage(mCursor);
+                    startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
+                            .setType("text/plain")
+                            .setText(message)
+                            .getIntent(), getString(R.string.action_share)));
+                }
+            }
+        });
+    }
+}
+
+
+
+/* Revisit one page adapter is working */
+ /*
         //attribution:  https://stackoverflow.com/a/32724422/9128441
         final CollapsingToolbarLayout collapsingToolbarLayout =  findViewById(R.id.collapsing_toolbar);
         AppBarLayout appBarLayout = findViewById(R.id.appbar);
@@ -185,57 +231,3 @@ public class ArticleDetailActivity extends AppCompatActivity
         });
 
 */
-
-
-        Timber.d("Setup toolbar");
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        if (toolbar != null) {
-
-           // toolbar.setTitle("Title");
-            setSupportActionBar(toolbar);
-            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Timber.d("handling tool bar nav click");
-                    supportFinishAfterTransition();
-                }
-            });
-
-            ActionBar actionBar = getSupportActionBar();
-            // prevent app title from displaying
-            actionBar.setTitle("");
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-    }
-
-    private void setUpViewPager(){
-        mPager = findViewById(R.id.article_pager);
-        mPagerAdapter = new ArticlePagerAdapter(getSupportFragmentManager());
-        mPager.setAdapter(mPagerAdapter);
-
-        float dimensionValue = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                1, getResources().getDisplayMetrics());
-
-        Timber.d("dimensionValue: " + dimensionValue);
-        mPager.setPageMargin((int) dimensionValue);
-
-        mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
-
-    }
-
-
-    private void setUpFAB(){
-        findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mCursor != null) {
-                    String message = formatShareMessage(mCursor);
-                    startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
-                            .setType("text/plain")
-                            .setText(message)
-                            .getIntent(), getString(R.string.action_share)));
-                }
-            }
-        });
-    }
-}

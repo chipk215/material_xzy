@@ -4,6 +4,7 @@ import android.database.Cursor;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.view.ViewGroup;
 
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.ui.ArticleDetailFragment;
@@ -39,5 +40,24 @@ public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public int getCount() {
         return (mCursor != null) ? mCursor.getCount() : 0;
+    }
+
+    @Override
+    public void setPrimaryItem(ViewGroup container, int position, Object object) {
+        super.setPrimaryItem(container, position, object);
+
+        Timber.d("setPrimaryItem");
+/*
+        ArticleDetailFragment selectedFragment = (ArticleDetailFragment) object;
+        if (selectedFragment != null){
+
+            Timber.d("setPrimaryItem invoked with itemID: " + selectedFragment.getItemId());
+            selectedFragment.updateArticleImage();
+        }else{
+            Timber.d("setPrimaryItem invoked with null fragment");
+        }
+*/
+
+
     }
 }

@@ -49,12 +49,17 @@ public class ArticleDetailFragment extends Fragment implements
     private static final int TEXT_BLOCK_SIZE = 2000;
 
     private Cursor mCursor;
+
+
+
     private long mItemId;
     private View mRootView;
     private int mCharactersConsumed;
     private String mPhotoURL;
     private TextView mBodyView;
     private Button mReadMore;
+
+    private Bitmap mArticleImageBitmap;
 
 
     /**
@@ -80,6 +85,7 @@ public class ArticleDetailFragment extends Fragment implements
             Timber.d("Detail Fragment onCreate... itemId= " + mItemId);
         }
         mCharactersConsumed = 0;
+        mArticleImageBitmap = null;
 
     }
 
@@ -105,8 +111,6 @@ public class ArticleDetailFragment extends Fragment implements
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
         return mRootView;
     }
-
-
 
 
 
@@ -195,15 +199,15 @@ public class ArticleDetailFragment extends Fragment implements
                         @Override
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
                             Timber.d("Article image loaded");
-                            final Bitmap articleImageBitmap  = imageContainer.getBitmap();
-                            if ( articleImageBitmap!= null) {
+                            mArticleImageBitmap  = imageContainer.getBitmap();
+                            if ( mArticleImageBitmap!= null) {
 
-                                Palette.from(articleImageBitmap).maximumColorCount(12).generate(new Palette.PaletteAsyncListener() {
+                                Palette.from(mArticleImageBitmap).maximumColorCount(12).generate(new Palette.PaletteAsyncListener() {
                                     @Override
                                     public void onGenerated(@NonNull Palette palette) {
                                         int mutedMetaBarColor = palette.getDarkMutedColor(getResources()
                                                 .getColor(R.color.meta_bar_default_muted_color));
-                                        articleImage.setImageBitmap(articleImageBitmap);
+                                        articleImage.setImageBitmap(mArticleImageBitmap);
                                         metaBar.setBackgroundColor(mutedMetaBarColor);
                                         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
                                         toolbar.setBackgroundColor(mutedMetaBarColor);
@@ -235,6 +239,7 @@ public class ArticleDetailFragment extends Fragment implements
     @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        Timber.d("Entering onCreateLoader");
         return ArticleLoader.newInstanceForItemId(getActivity(), mItemId);
     }
 
@@ -243,12 +248,13 @@ public class ArticleDetailFragment extends Fragment implements
         Timber.d("Entering onLoadFinished");
         if (!isAdded()) {
             if (cursor != null) {
+                Timber.d("closing cursor, fragment not added");
                 cursor.close();
             }
             return;
         }
 
-        Timber.d("Cursor now valid in detail fragment");
+        Timber.d("onLoadFinished Cursor valid in detail fragment with itemID= " + mItemId);
         mCursor = cursor;
         if (mCursor != null && !mCursor.moveToFirst()) {
             Timber.e( "Error reading item detail cursor");
@@ -270,6 +276,12 @@ public class ArticleDetailFragment extends Fragment implements
     public void onResume(){
         super.onResume();
         Timber.d("Detail Fragment on Resume.. itemId = " + mItemId);
+    }
+
+    @Override
+    public void onDestroy(){
+        Timber.d("Detail fragment onDestroy.. itemId= " + mItemId);
+        super.onDestroy();
     }
 
     private static void appendColoredText(TextView tv, String text, int color) {
@@ -320,5 +332,18 @@ public class ArticleDetailFragment extends Fragment implements
         mBodyView.append(Html.fromHtml(remainder));
 
     }
+
+
+    public void updateArticleImage(){
+        Timber.d("updateArticleImage invoked");
+        if (mArticleImageBitmap != null){
+            Timber.d("Updating article image");
+            Timber.d("Fragment's photoURL= " + mPhotoURL);
+            final ImageView articleImage = getActivity().findViewById(R.id.article_image);
+            articleImage.setImageBitmap(mArticleImageBitmap);
+
+        }
+    }
+
 
 }

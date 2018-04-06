@@ -46,9 +46,6 @@ public class ArticleListActivity extends AppCompatActivity implements
     private RecyclerView mRecyclerView;
 
     private boolean mAnimateTransition;
-   // private Interpolator mInterpolator;
-
-    private boolean mServiceStarted;
 
     private Activity mThisActivity;
 
@@ -62,12 +59,10 @@ public class ArticleListActivity extends AppCompatActivity implements
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Apply activity transition
             mAnimateTransition = true;
-          //  mInterpolator = AnimationUtils.loadInterpolator(mThisActivity, android.R.interpolator.linear_out_slow_in);
         } else {
             // Swap without transition
             mAnimateTransition = false;
         }
-
 
         //Stetho.initializeWithDefaults(this);
 
@@ -82,13 +77,12 @@ public class ArticleListActivity extends AppCompatActivity implements
 
         if (savedInstanceState == null) {
             //refresh the UI if not handling a configuration change
-            refresh();
+            startUpdateService();
         }
     }
 
-    private void refresh() {
+    private void startUpdateService() {
         Timber.d("Starting UpdaterService");
-        mServiceStarted = true;
         startService(new Intent(this, UpdaterService.class));
     }
 
@@ -114,7 +108,6 @@ public class ArticleListActivity extends AppCompatActivity implements
     }
 
 
-
     // Broadcast receiver which listens to UpdateService article refresh update state changes
     private BroadcastReceiver mRefreshingReceiver = new BroadcastReceiver() {
         @Override
@@ -131,7 +124,6 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     private void updateRefreshingUI(boolean isRefreshing) {
         Timber.d("SwipeRefreshLayout.setRefreshing: " + isRefreshing);
-        mServiceStarted = isRefreshing;
         mSwipeRefreshLayout.setRefreshing(isRefreshing);
     }
 
@@ -151,7 +143,6 @@ public class ArticleListActivity extends AppCompatActivity implements
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 DynamicHeightNetworkImageView imageView = view.findViewById(R.id.thumbnail);
                 if (mAnimateTransition){
-
                     Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(
                             mThisActivity,
                             imageView,
@@ -175,7 +166,6 @@ public class ArticleListActivity extends AppCompatActivity implements
     }
 
 
-
     private void initRecyclerView(){
         mRecyclerView =  findViewById(R.id.recycler_view);
         int columnCount = getResources().getInteger(R.integer.list_column_count);
@@ -189,22 +179,7 @@ public class ArticleListActivity extends AppCompatActivity implements
 
 
     private void initRefreshLayout(){
-
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
-        // handle user initiated refresh requests
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                // if a refresh is already in progress do not start another one
-                if (!mServiceStarted) {
-                    refresh();
-                }
-            }
-        });
-
-        // revisit- do we want the user to initiate refreshes? It seems annoying, so no.
-        mSwipeRefreshLayout.setEnabled(false);
     }
-
 
 }
