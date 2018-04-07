@@ -124,7 +124,7 @@ public class ArticleDetailFragment extends Fragment implements
     private void setUpToolBar() {
 
         Timber.d("Setup toolbar");
-        Toolbar toolbar = (Toolbar) mRootView.findViewById(R.id.toolbar);
+        Toolbar toolbar = mRootView.findViewById(R.id.toolbar);
         if (toolbar != null) {
 
             ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
@@ -146,6 +146,7 @@ public class ArticleDetailFragment extends Fragment implements
 
     private void setUpFAB(){
         mRootView.findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
                 if (mCursor != null) {
@@ -237,7 +238,7 @@ public class ArticleDetailFragment extends Fragment implements
 
             // get photo
             mPhotoURL = mCursor.getString(ArticleLoader.Query.PHOTO_URL);
-            Timber.d("Retrieve photo url: " + mPhotoURL);
+            Timber.d("Retrieve photo url: %s", mPhotoURL);
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mPhotoURL, new ImageLoader.ImageListener() {
                         @Override
@@ -267,7 +268,6 @@ public class ArticleDetailFragment extends Fragment implements
                         }
                     });
 
-
         } else {
             Timber.d("mCursor null ... exiting bindViews");
             mRootView.setVisibility(View.GONE);
@@ -276,7 +276,7 @@ public class ArticleDetailFragment extends Fragment implements
             mBodyView.setText("N/A");
         }
 
-        Timber.d("Exiting bindviews for mItemId: " + mItemId);
+        Timber.d("Exiting bindviews for mItemId: %s", mItemId);
       /*  Debug.stopMethodTracing();  */
     }
 
@@ -311,23 +311,12 @@ public class ArticleDetailFragment extends Fragment implements
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
+    public void onLoaderReset(@NonNull Loader<Cursor> cursorLoader) {
         Timber.d("onLoaderReset invoked");
         mCursor = null;
         bindViews();
     }
 
-    @Override
-    public void onResume(){
-        super.onResume();
-        Timber.d("Detail Fragment on Resume.. itemId = " + mItemId);
-    }
-
-    @Override
-    public void onDestroy(){
-        Timber.d("Detail fragment onDestroy.. itemId= " + mItemId);
-        super.onDestroy();
-    }
 
     private static void appendColoredText(TextView tv, String text, int color) {
         int start = tv.getText().length();
@@ -338,6 +327,8 @@ public class ArticleDetailFragment extends Fragment implements
         spannableText.setSpan(new ForegroundColorSpan(color), start, end, 0);
     }
 
+
+    // Process a block of article text
     private void processArticleText(int articleLength, String bodyText){
         String newText;
         if ((articleLength - mCharactersConsumed) > TEXT_BLOCK_SIZE){
@@ -362,7 +353,7 @@ public class ArticleDetailFragment extends Fragment implements
             mReadMore.setVisibility(View.INVISIBLE);
         }
 
-
+        // determine end of first work in new text
         int endOfFirstWordIndex = newText.indexOf(' ',1);
         if (endOfFirstWordIndex == -1){
             endOfFirstWordIndex = 1;
@@ -372,7 +363,6 @@ public class ArticleDetailFragment extends Fragment implements
         appendColoredText(mBodyView,newText.substring(0,endOfFirstWordIndex),
                 getResources().getColor(R.color.first_wordColor));
 
-
         String remainder = "&nbsp" + newText.substring(endOfFirstWordIndex) ;
         mBodyView.append(Html.fromHtml(remainder));
 
@@ -380,7 +370,8 @@ public class ArticleDetailFragment extends Fragment implements
 
 
 
-    private String formatShareMessage(Cursor cursor){
+    // Combine the article title and author information
+    private  String formatShareMessage(Cursor cursor){
         String message = getString(R.string.share_message);
         message += System.getProperty("line.separator") + System.getProperty("line.separator");
         message += getString(R.string.title);
