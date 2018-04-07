@@ -62,6 +62,12 @@ public class ArticleListActivity extends AppCompatActivity implements
     public ArticleListActivity(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
+            // Attribution https://github.com/alexjlockwood/adp-activity-transitions
+            //
+            // I pretty much followed this example to learn how to adjust the shared
+            // item return transition when the invoked activity changes the the
+            // original referenced view via a pager adapter.
+
             mSharedElementCallback = new SharedElementCallback() {
                 @SuppressLint("NewApi")
                 @Override
