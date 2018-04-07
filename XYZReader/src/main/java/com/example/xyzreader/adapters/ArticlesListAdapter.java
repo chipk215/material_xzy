@@ -92,6 +92,7 @@ public class ArticlesListAdapter extends RecyclerView.Adapter<ArticlesListAdapte
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             holder.thumbnailView.setTransitionName(mCursor.getString(ArticleLoader.Query._ID));
+            holder.thumbnailView.setTag(mCursor.getLong(ArticleLoader.Query._ID));
         }
     }
 

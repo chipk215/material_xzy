@@ -1,9 +1,11 @@
 package com.example.xyzreader.ui;
 
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityOptions;
+import android.app.SharedElementCallback;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +14,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -20,14 +23,15 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.animation.AnimationUtils;
-import android.view.animation.Interpolator;
+import android.view.ViewTreeObserver;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.adapters.ArticlesListAdapter;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.UpdaterService;
-import com.facebook.stetho.Stetho;
+
+import java.util.List;
+import java.util.Map;
 
 import timber.log.Timber;
 
@@ -40,14 +44,52 @@ import timber.log.Timber;
 public class ArticleListActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
+    static final String EXTRA_STARTING_ARTICLE_ID = "extra_starting_article_id";
+    static final String EXTRA_CURRENT_ARTICLE_ID = "extra_current_article_id";
+
 
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
+    private Bundle mTmpReenterState;
 
     private boolean mAnimateTransition;
 
     private Activity mThisActivity;
+
+    private final SharedElementCallback mSharedElementCallback;
+
+    public ArticleListActivity(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            mSharedElementCallback = new SharedElementCallback() {
+                @SuppressLint("NewApi")
+                @Override
+                public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
+                    if (mTmpReenterState != null) {
+                        long startingArticleId = mTmpReenterState.getInt(EXTRA_STARTING_ARTICLE_ID);
+                        long currentArticleId = mTmpReenterState.getInt(EXTRA_CURRENT_ARTICLE_ID);
+                        if (startingArticleId != currentArticleId) {
+                            // get the thumbnail corresponding to the current article id
+                            View newSharedElement = mRecyclerView.findViewWithTag(currentArticleId);
+                            if (newSharedElement != null){
+                                names.clear();
+                                names.add(newSharedElement.getTransitionName());
+                                sharedElements.clear();
+                                sharedElements.put(newSharedElement.getTransitionName(), newSharedElement);
+                            }
+                        }
+                        mTmpReenterState = null;
+                    }else{
+                        //sharedElements.put()
+                    }
+                }
+            };
+        }else{
+            mSharedElementCallback = null;
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +121,30 @@ public class ArticleListActivity extends AppCompatActivity implements
             //refresh the UI if not handling a configuration change
             startUpdateService();
         }
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public void onActivityReenter(int requestCode, Intent data) {
+        super.onActivityReenter(requestCode, data);
+        mTmpReenterState = new Bundle(data.getExtras());
+        int startingPosition = mTmpReenterState.getInt(EXTRA_STARTING_ARTICLE_ID);
+        int currentPosition = mTmpReenterState.getInt(EXTRA_CURRENT_ARTICLE_ID);
+        if (startingPosition != currentPosition) {
+            mRecyclerView.scrollToPosition(currentPosition);
+        }
+        postponeEnterTransition();
+        mRecyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                mRecyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
+                // TODO: figure out why it is necessary to request layout here in order to get a smooth transition.
+                mRecyclerView.requestLayout();
+                startPostponedEnterTransition();
+                return true;
+            }
+        });
     }
 
     private void startUpdateService() {

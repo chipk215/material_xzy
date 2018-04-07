@@ -14,11 +14,19 @@ import com.example.xyzreader.ui.ArticleDetailFragment;
 import timber.log.Timber;
 
 public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
+
+    public interface PrimaryItemListener{
+        void setPrimaryItem(ViewGroup container, int position, Object object);
+    }
+
     Cursor mCursor;
-    Activity mActivity;
-    public ArticlePagerAdapter(FragmentManager fm, Activity activity) {
+    PrimaryItemListener mPrimaryCallback;
+
+
+
+    public ArticlePagerAdapter(FragmentManager fm, PrimaryItemListener callback) {
         super(fm);
-        mActivity = activity;
+        mPrimaryCallback = callback;
 
     }
 
@@ -32,7 +40,7 @@ public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
         if (mCursor != null){
             Timber.d("Moving to position: " + position);
             mCursor.moveToPosition(position);
-            Fragment fragment = ArticleDetailFragment.newInstance(mCursor.getLong(ArticleLoader.Query._ID));
+            Fragment fragment = ArticleDetailFragment.newInstance(mCursor.getInt(ArticleLoader.Query._ID));
 
             return fragment;
 
@@ -50,8 +58,8 @@ public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
     public void setPrimaryItem(ViewGroup container, int position, Object object) {
         super.setPrimaryItem(container, position, object);
 
-        Timber.d("setPrimaryItem");
-        ActivityCompat.startPostponedEnterTransition(mActivity);
+        mPrimaryCallback.setPrimaryItem(container, position, object);
+
 /*
         ArticleDetailFragment selectedFragment = (ArticleDetailFragment) object;
         if (selectedFragment != null){

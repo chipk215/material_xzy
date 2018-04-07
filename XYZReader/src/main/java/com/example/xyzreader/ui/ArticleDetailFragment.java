@@ -169,6 +169,7 @@ public class ArticleDetailFragment extends Fragment implements
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mArticleImage.setTransitionName(mCursor.getString(ArticleLoader.Query._ID));
+            getActivity().startPostponedEnterTransition();
         }
         bindViews();
 
@@ -401,6 +402,15 @@ public class ArticleDetailFragment extends Fragment implements
         message += getString(R.string.author);
         message += cursor.getString(ArticleLoader.Query.AUTHOR);
         return message;
+    }
+
+
+    public ImageView getArticleImageView(){
+        return mArticleImage;
+    }
+
+    public long getArticleId(){
+        return mItemId;
     }
 
 
