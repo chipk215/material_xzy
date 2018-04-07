@@ -27,9 +27,9 @@
         <item name="android:windowActivityTransitions">true</item>
         <item name="android:windowContentTransitions">true</item>
 
-        <!-- specify enter and exit transitions -->
+        <!-- specify enter and exit transitions
         <item name="android:windowEnterTransition">@transition/fade</item>
-        <item name="android:windowExitTransition">@transition/explode</item>
+        <item name="android:windowExitTransition">@transition/explode</item>  -->
 
 
 

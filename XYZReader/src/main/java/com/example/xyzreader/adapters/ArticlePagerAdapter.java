@@ -15,10 +15,10 @@ import timber.log.Timber;
 
 public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
     Cursor mCursor;
-    Activity mmActivity;
+    Activity mActivity;
     public ArticlePagerAdapter(FragmentManager fm, Activity activity) {
         super(fm);
-        mmActivity = activity;
+        mActivity = activity;
 
     }
 
@@ -51,7 +51,7 @@ public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
         super.setPrimaryItem(container, position, object);
 
         Timber.d("setPrimaryItem");
-     //   ActivityCompat.startPostponedEnterTransition(mmActivity);
+        ActivityCompat.startPostponedEnterTransition(mActivity);
 /*
         ArticleDetailFragment selectedFragment = (ArticleDetailFragment) object;
         if (selectedFragment != null){

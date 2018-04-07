@@ -89,6 +89,10 @@ public class ArticlesListAdapter extends RecyclerView.Adapter<ArticlesListAdapte
                 mCursor.getString(ArticleLoader.Query.THUMB_URL),
                 ImageLoaderHelper.getInstance(mContext).getImageLoader());
         holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            holder.thumbnailView.setTransitionName(mCursor.getString(ArticleLoader.Query._ID));
+        }
     }
 
     @Override

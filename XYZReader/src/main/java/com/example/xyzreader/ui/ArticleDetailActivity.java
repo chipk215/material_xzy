@@ -34,7 +34,7 @@ public class ArticleDetailActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-      //  ActivityCompat.postponeEnterTransition(this);
+        ActivityCompat.postponeEnterTransition(this);
 
         Timber.d("Entering ArticleDetailActivity onCreate");
         setContentView(R.layout.activity_article_detail);

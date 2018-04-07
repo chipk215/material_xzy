@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -166,6 +167,9 @@ public class ArticleDetailFragment extends Fragment implements
             mCursor = null;
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mArticleImage.setTransitionName(mCursor.getString(ArticleLoader.Query._ID));
+        }
         bindViews();
 
     }
