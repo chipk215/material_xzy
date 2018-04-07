@@ -3,7 +3,6 @@ package com.example.xyzreader.ui;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,13 +17,10 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -38,6 +34,9 @@ import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.utility.DateHelper;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import timber.log.Timber;
 
 /**
@@ -53,13 +52,35 @@ public class ArticleDetailFragment extends Fragment implements
     // Paged article text size
     private static final int TEXT_BLOCK_SIZE = 2000;
 
+    private Unbinder mUnbinder;
+
     private Cursor mCursor;
     private long mItemId;
+
     private View mRootView;
     private int mCharactersConsumed;
     private String mPhotoURL;
-    private TextView mBodyView;
-    private Button mReadMore;
+
+    @BindView(R.id.article_body)
+    TextView mBodyView;
+
+    @BindView(R.id.read_more)
+    Button mReadMore;
+
+    @BindView(R.id.article_title)
+    TextView mTitleView;
+
+    @BindView(R.id.article_byline)
+    TextView mByLineView ;
+
+    @BindView(R.id.meta_bar)
+    LinearLayout mMetaBar;
+
+    @BindView(R.id.article_image)
+    ImageView mArticleImage;
+
+    @BindView(R.id.toolbar )
+    Toolbar mToolBar;
 
     private Bitmap mArticleImageBitmap;
 
@@ -84,13 +105,12 @@ public class ArticleDetailFragment extends Fragment implements
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
-            Timber.d("Detail Fragment onCreate... itemId= " + mItemId);
+            Timber.d("Detail Fragment onCreate... itemId= %s", mItemId);
         }
         mCharactersConsumed = 0;
         mArticleImageBitmap = null;
 
     }
-
 
 
     @Override
@@ -111,7 +131,7 @@ public class ArticleDetailFragment extends Fragment implements
 
         Timber.d("Entering onCreateView");
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-
+        mUnbinder = ButterKnife.bind(this, mRootView);
         setUpToolBar();
 
         setUpFAB();
@@ -119,6 +139,49 @@ public class ArticleDetailFragment extends Fragment implements
         return mRootView;
     }
 
+
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        Timber.d("Entering onCreateLoader");
+        return ArticleLoader.newInstanceForItemId(getActivity(), mItemId);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        Timber.d("Entering onLoadFinished");
+        if (!isAdded()) {
+            if (cursor != null) {
+                Timber.d("closing cursor, fragment not added");
+                cursor.close();
+            }
+            return;
+        }
+
+        Timber.d("onLoadFinished Cursor valid in detail fragment with itemID= %s", mItemId);
+        mCursor = cursor;
+        if (mCursor != null && !mCursor.moveToFirst()) {
+            Timber.e( "Error reading item detail cursor");
+            mCursor.close();
+            mCursor = null;
+        }
+
+        bindViews();
+        ActivityCompat.startPostponedEnterTransition(getActivity());
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> cursorLoader) {
+        Timber.d("onLoaderReset invoked");
+        mCursor = null;
+        bindViews();
+    }
+
+    @Override
+    public void onDestroyView(){
+        super.onDestroyView();
+        mUnbinder.unbind();
+    }
 
 
     private void setUpToolBar() {
@@ -175,17 +238,11 @@ public class ArticleDetailFragment extends Fragment implements
             return;
         }
 
+        mByLineView.setMovementMethod(new LinkMovementMethod());
 
-        TextView titleView =  mRootView.findViewById(R.id.article_title);
-        TextView bylineView = mRootView.findViewById(R.id.article_byline);
-        bylineView.setMovementMethod(new LinkMovementMethod());
-        mBodyView =  mRootView.findViewById(R.id.article_body);
-        mReadMore = mRootView.findViewById(R.id.read_more);
-
-        // get body text
         Timber.d("Request body text");
         final String bodyText = mCursor.getString(ArticleLoader.Query.BODY);
-        final int articleLength = bodyText.length();
+        final long articleLength = bodyText.length();
 
 
         mReadMore.setOnClickListener(new View.OnClickListener() {
@@ -196,45 +253,24 @@ public class ArticleDetailFragment extends Fragment implements
         });
 
 
-        final LinearLayout metaBar = mRootView.findViewById(R.id.meta_bar);
-
-        final ImageView articleImage = mRootView.findViewById(R.id.article_image);
-
         // Seems to be appropriate typeface for articles: http://www.1001fonts.com/rosario-font.html
         mBodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
         if (mCursor != null) {
 
             // retrieve title
-            titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+            mTitleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
 
             // retrieve published date
             String publishedDate =
                     DateHelper.getPublishedDate(
                             mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE));
 
-            bylineView.setText(Html.fromHtml(publishedDate + " by <font color='#ffffff'>"
-                            + mCursor.getString(ArticleLoader.Query.AUTHOR)
-                            + "</font>"));
+            mByLineView.setText(Html.fromHtml(publishedDate + " by <font color='#ffffff'>"
+                    + mCursor.getString(ArticleLoader.Query.AUTHOR)
+                    + "</font>"));
 
-
-            Spanned htmlBody;
-            if (articleLength > TEXT_BLOCK_SIZE){
-                String bodyString = mCursor.getString(ArticleLoader.Query.BODY).substring(0,TEXT_BLOCK_SIZE);
-                int lastSpaceIndex = bodyString.lastIndexOf(" ",TEXT_BLOCK_SIZE-1);
-                mCharactersConsumed = lastSpaceIndex;
-
-                htmlBody = Html.fromHtml(bodyString.substring(0,lastSpaceIndex) );
-            }else{
-                htmlBody = Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY));
-                // use invisible to keep bottom padding
-                mReadMore.setVisibility(View.INVISIBLE);
-                mReadMore.setEnabled(false);
-            }
-
-            mBodyView.setText(htmlBody);
-
-            Timber.d("Body text returned");
+            setArticleText(articleLength);
 
             // get photo
             mPhotoURL = mCursor.getString(ArticleLoader.Query.PHOTO_URL);
@@ -252,13 +288,11 @@ public class ArticleDetailFragment extends Fragment implements
                                     public void onGenerated(@NonNull Palette palette) {
                                         int mutedMetaBarColor = palette.getDarkMutedColor(getResources()
                                                 .getColor(R.color.meta_bar_default_muted_color));
-                                        articleImage.setImageBitmap(mArticleImageBitmap);
-                                        metaBar.setBackgroundColor(mutedMetaBarColor);
-                                        Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-                                        toolbar.setBackgroundColor(mutedMetaBarColor);
+                                        mArticleImage.setImageBitmap(mArticleImageBitmap);
+                                        mMetaBar.setBackgroundColor(mutedMetaBarColor);
+                                        mToolBar.setBackgroundColor(mutedMetaBarColor);
                                     }
                                 });
-
                             }
                         }
 
@@ -271,50 +305,34 @@ public class ArticleDetailFragment extends Fragment implements
         } else {
             Timber.d("mCursor null ... exiting bindViews");
             mRootView.setVisibility(View.GONE);
-            titleView.setText("N/A");
-            bylineView.setText("N/A" );
+            mTitleView.setText("N/A");
+            mByLineView.setText("N/A" );
             mBodyView.setText("N/A");
         }
 
         Timber.d("Exiting bindviews for mItemId: %s", mItemId);
-      /*  Debug.stopMethodTracing();  */
+        /*  Debug.stopMethodTracing();  */
     }
 
-    @NonNull
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        Timber.d("Entering onCreateLoader");
-        return ArticleLoader.newInstanceForItemId(getActivity(), mItemId);
-    }
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        Timber.d("Entering onLoadFinished");
-        if (!isAdded()) {
-            if (cursor != null) {
-                Timber.d("closing cursor, fragment not added");
-                cursor.close();
-            }
-            return;
+    // Sets the first block of article text
+    private void setArticleText(final long articleLength){
+        Spanned htmlBody;
+        if (articleLength > TEXT_BLOCK_SIZE){
+            String bodyString = mCursor.getString(ArticleLoader.Query.BODY).substring(0,TEXT_BLOCK_SIZE);
+            int lastSpaceIndex = bodyString.lastIndexOf(" ",TEXT_BLOCK_SIZE-1);
+            mCharactersConsumed = lastSpaceIndex;
+
+            htmlBody = Html.fromHtml(bodyString.substring(0,lastSpaceIndex) );
+        }else{
+            htmlBody = Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY));
+            // use invisible to keep bottom padding
+            mReadMore.setVisibility(View.INVISIBLE);
+            mReadMore.setEnabled(false);
         }
 
-        Timber.d("onLoadFinished Cursor valid in detail fragment with itemID= %s", mItemId);
-        mCursor = cursor;
-        if (mCursor != null && !mCursor.moveToFirst()) {
-            Timber.e( "Error reading item detail cursor");
-            mCursor.close();
-            mCursor = null;
-        }
-
-        bindViews();
-        ActivityCompat.startPostponedEnterTransition(getActivity());
-    }
-
-    @Override
-    public void onLoaderReset(@NonNull Loader<Cursor> cursorLoader) {
-        Timber.d("onLoaderReset invoked");
-        mCursor = null;
-        bindViews();
+        mBodyView.setText(htmlBody);
+        Timber.d("Body text returned");
     }
 
 
@@ -328,8 +346,8 @@ public class ArticleDetailFragment extends Fragment implements
     }
 
 
-    // Process a block of article text
-    private void processArticleText(int articleLength, String bodyText){
+    // Process 2-n blocks of article text
+    private void processArticleText(long articleLength, String bodyText){
         String newText;
         if ((articleLength - mCharactersConsumed) > TEXT_BLOCK_SIZE){
             // There is more article text to process
@@ -367,7 +385,6 @@ public class ArticleDetailFragment extends Fragment implements
         mBodyView.append(Html.fromHtml(remainder));
 
     }
-
 
 
     // Combine the article title and author information
