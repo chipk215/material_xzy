@@ -167,7 +167,7 @@ public class ArticleDetailFragment extends Fragment implements
         }
 
         bindViews();
-        ActivityCompat.startPostponedEnterTransition(getActivity());
+
     }
 
     @Override

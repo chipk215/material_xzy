@@ -1,6 +1,8 @@
 package com.example.xyzreader.adapters;
 
+import android.app.Activity;
 import android.database.Cursor;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -13,8 +15,10 @@ import timber.log.Timber;
 
 public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
     Cursor mCursor;
-    public ArticlePagerAdapter(FragmentManager fm) {
+    Activity mmActivity;
+    public ArticlePagerAdapter(FragmentManager fm, Activity activity) {
         super(fm);
+        mmActivity = activity;
 
     }
 
@@ -47,6 +51,7 @@ public class ArticlePagerAdapter extends FragmentStatePagerAdapter {
         super.setPrimaryItem(container, position, object);
 
         Timber.d("setPrimaryItem");
+     //   ActivityCompat.startPostponedEnterTransition(mmActivity);
 /*
         ArticleDetailFragment selectedFragment = (ArticleDetailFragment) object;
         if (selectedFragment != null){

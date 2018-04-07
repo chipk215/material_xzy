@@ -34,7 +34,7 @@ public class ArticleDetailActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ActivityCompat.postponeEnterTransition(this);
+      //  ActivityCompat.postponeEnterTransition(this);
 
         Timber.d("Entering ArticleDetailActivity onCreate");
         setContentView(R.layout.activity_article_detail);
@@ -90,7 +90,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     private void setUpViewPager(){
         mPager = findViewById(R.id.article_pager);
-        mPagerAdapter = new ArticlePagerAdapter(getSupportFragmentManager());
+        mPagerAdapter = new ArticlePagerAdapter(getSupportFragmentManager(), this);
         mPager.setAdapter(mPagerAdapter);
 
         float dimensionValue = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
@@ -99,7 +99,7 @@ public class ArticleDetailActivity extends AppCompatActivity
         Timber.d("dimensionValue: " + dimensionValue);
         mPager.setPageMargin((int) dimensionValue);
 
-        //TODO Fix this
+        //TODO what is this?
         mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
 
     }
