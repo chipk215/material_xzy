@@ -187,11 +187,11 @@ public class ArticleDetailFragment extends Fragment implements
     private void setUpToolBar() {
 
         Timber.d("Setup toolbar");
-        Toolbar toolbar = mRootView.findViewById(R.id.toolbar);
-        if (toolbar != null) {
 
-            ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
-            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        if (mToolBar != null) {
+
+            ((AppCompatActivity)getActivity()).setSupportActionBar(mToolBar);
+            mToolBar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Timber.d("handling tool bar nav click");

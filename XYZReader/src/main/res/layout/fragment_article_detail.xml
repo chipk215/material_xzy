@@ -1,27 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/appbar"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/detail_app_bar_height"
-        android:fitsSystemWindows="true"
-        android:gravity="center"
-        android:theme="@style/AppTheme.AppBarOverlay">
+
+
+<android.support.design.widget.AppBarLayout android:id="@+id/appbar"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/detail_app_bar_height"
+    android:fitsSystemWindows="true"
+    android:gravity="center"
+    android:theme="@style/AppTheme.AppBarOverlay"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
+
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            <include layout="@layout/article_image" />
+            <include
+                layout="@layout/article_image"
+                app:layout_collapseParallaxMultiplier="1.0" />
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -105,6 +112,7 @@
                     android:layout_height="wrap_content"
                     android:paddingTop="@dimen/read_more_button_top_padding"
                     android:paddingStart="@dimen/read_more_button_start_padding"
+                    android:paddingEnd="@dimen/read_more_button_start_padding"
                     android:paddingBottom="@dimen/read_more_button_bottom_padding"
                     android:text="@string/continue_reading"
                     android:textColor="@color/cont_reading_color"
