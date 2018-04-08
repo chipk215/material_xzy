@@ -88,13 +88,13 @@ public class ArticleDetailActivity extends AppCompatActivity
 
 
     @Override
-    public void finishAfterTransition() {
+    public void supportFinishAfterTransition() {
         mIsReturning = true;
         Intent data = new Intent();
         data.putExtra(EXTRA_STARTING_ARTICLE_ID, mStartArticleId);
         data.putExtra(EXTRA_CURRENT_ARTICLE_ID, mCurrentDetailsFragment.getArticleId());
         setResult(RESULT_OK, data);
-        super.finishAfterTransition();
+        super.supportFinishAfterTransition();
     }
 
     @Override
@@ -113,6 +113,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 
         getSupportLoaderManager().initLoader(0, null, this);
 
+        mStartArticleId = 0;
         if (savedInstanceState == null) {
             if (getIntent() != null && getIntent().getData() != null) {
                 mStartArticleId = ItemsContract.Items.getItemId(getIntent().getData());
@@ -147,7 +148,7 @@ public class ArticleDetailActivity extends AppCompatActivity
                 }
                 mCursor.moveToNext();
             }
-            mStartArticleId = 0;
+
         }
     }
 

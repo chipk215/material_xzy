@@ -73,8 +73,8 @@ public class ArticleListActivity extends AppCompatActivity implements
                 @Override
                 public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
                     if (mTmpReenterState != null) {
-                        long startingArticleId = mTmpReenterState.getInt(EXTRA_STARTING_ARTICLE_ID);
-                        long currentArticleId = mTmpReenterState.getInt(EXTRA_CURRENT_ARTICLE_ID);
+                        long startingArticleId = mTmpReenterState.getLong(EXTRA_STARTING_ARTICLE_ID);
+                        long currentArticleId = mTmpReenterState.getLong(EXTRA_CURRENT_ARTICLE_ID);
                         if (startingArticleId != currentArticleId) {
                             // get the thumbnail corresponding to the current article id
                             View newSharedElement = mRecyclerView.findViewWithTag(currentArticleId);
@@ -135,10 +135,10 @@ public class ArticleListActivity extends AppCompatActivity implements
     public void onActivityReenter(int requestCode, Intent data) {
         super.onActivityReenter(requestCode, data);
         mTmpReenterState = new Bundle(data.getExtras());
-        int startingPosition = mTmpReenterState.getInt(EXTRA_STARTING_ARTICLE_ID);
-        int currentPosition = mTmpReenterState.getInt(EXTRA_CURRENT_ARTICLE_ID);
-        if (startingPosition != currentPosition) {
-            mRecyclerView.scrollToPosition(currentPosition);
+        long startingArticleId = mTmpReenterState.getLong(EXTRA_STARTING_ARTICLE_ID);
+        long currentArticleId = mTmpReenterState.getLong(EXTRA_CURRENT_ARTICLE_ID);
+        if (startingArticleId != currentArticleId) {
+            // scroll to current article
         }
         postponeEnterTransition();
         mRecyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
