@@ -97,6 +97,13 @@ public class ArticleDetailActivity extends AppCompatActivity
         super.supportFinishAfterTransition();
     }
 
+
+    @Override
+    public void onBackPressed(){
+        supportFinishAfterTransition();
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -77,8 +77,10 @@ public class ArticleListActivity extends AppCompatActivity implements
                         long currentArticleId = mTmpReenterState.getLong(EXTRA_CURRENT_ARTICLE_ID);
                         if (startingArticleId != currentArticleId) {
                             // get the thumbnail corresponding to the current article id
+                            // this only works if the requested view is visible- see note below
                             View newSharedElement = mRecyclerView.findViewWithTag(currentArticleId);
                             if (newSharedElement != null){
+                                // an article with the corresponding id is in view
                                 names.clear();
                                 names.add(newSharedElement.getTransitionName());
                                 sharedElements.clear();
@@ -135,17 +137,27 @@ public class ArticleListActivity extends AppCompatActivity implements
     public void onActivityReenter(int requestCode, Intent data) {
         super.onActivityReenter(requestCode, data);
         mTmpReenterState = new Bundle(data.getExtras());
-        long startingArticleId = mTmpReenterState.getLong(EXTRA_STARTING_ARTICLE_ID);
-        long currentArticleId = mTmpReenterState.getLong(EXTRA_CURRENT_ARTICLE_ID);
-        if (startingArticleId != currentArticleId) {
-            // scroll to current article
-        }
+
+        // This only works if the corresponding thumbnail view is visible on the
+        // screen (or has been visible) after returning to ArticleListActivity and refreshing from the
+        // cloud's XYZ article server.  The refresh could mean the corresponding
+        // article is no longer available (it was removed from the server) or
+        // the corresponding thumbnail view is not bound to the recycler view
+        // because it is offscreen.
+
+        // We need a more general solution that matches an article id with any corresponding
+        // thumbnail view and then scrolls the corresponding view to be on-screen if it exists.
+
+        // I tried multiple approaches (unsuccessfully) which seemed to be beyond the scope
+        // of this project.
+
+
+        //Attribution: https://github.com/alexjlockwood/adp-activity-transitions
         postponeEnterTransition();
         mRecyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
                 mRecyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
-                // TODO: figure out why it is necessary to request layout here in order to get a smooth transition.
                 mRecyclerView.requestLayout();
                 startPostponedEnterTransition();
                 return true;
@@ -206,6 +218,7 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        Timber.d("onLoadFinished invoked.. new adapter") ;
         ArticlesListAdapter adapter = new ArticlesListAdapter(cursor, this,
                 new ArticlesListAdapter.ArticleClickListener() {
 

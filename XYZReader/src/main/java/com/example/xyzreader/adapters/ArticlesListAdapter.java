@@ -93,6 +93,12 @@ public class ArticlesListAdapter extends RecyclerView.Adapter<ArticlesListAdapte
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             holder.thumbnailView.setTransitionName(mCursor.getString(ArticleLoader.Query._ID));
             holder.thumbnailView.setTag(mCursor.getLong(ArticleLoader.Query._ID));
+
+            // This is flawed since the adapter is being destroyed/recreated when the activity
+            // is resumed and the position could change if new article data is provided from
+            // the reader source.
+            //holder.thumbnailView.setTag(R.id.position_tag,position);
+
         }
     }
 
