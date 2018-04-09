@@ -55,6 +55,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
+            // Remap thumbnail view if user changed views using pager adapter
             mSharedElementCallback = new SharedElementCallback() {
                 @SuppressLint("NewApi")
                 @Override
@@ -72,11 +73,9 @@ public class ArticleDetailActivity extends AppCompatActivity
                             // remove the old shared element and replace it with the new shared element
                             // that should be transitioned instead.
                             names.clear();
-
                             names.add(sharedElement.getTransitionName());
                             sharedElements.clear();
                             sharedElements.put(sharedElement.getTransitionName(), sharedElement);
-
                         }
                     }
                 }
@@ -89,6 +88,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     @Override
     public void supportFinishAfterTransition() {
+        Timber.d("executing supportFinishAfterTransition");
         mIsReturning = true;
         Intent data = new Intent();
         data.putExtra(EXTRA_STARTING_ARTICLE_ID, mStartArticleId);
@@ -97,12 +97,23 @@ public class ArticleDetailActivity extends AppCompatActivity
         super.supportFinishAfterTransition();
     }
 
-
+/*
     @Override
-    public void onBackPressed(){
-        supportFinishAfterTransition();
+    public void onBackPressed() {
+        Timber.d("executing onBackPressed");
+        int count = getSupportFragmentManager().getBackStackEntryCount();
+
+        if (count == 0) {
+            super.onBackPressed();
+            //additional code
+            supportFinishAfterTransition();
+        } else {
+            getSupportFragmentManager().popBackStack();
+        }
 
     }
+*/
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +126,6 @@ public class ArticleDetailActivity extends AppCompatActivity
             setEnterSharedElementCallback(mSharedElementCallback);
         }
 
-        Timber.d("Entering ArticleDetailActivity onCreate");
         setContentView(R.layout.activity_article_detail);
 
         getSupportLoaderManager().initLoader(0, null, this);
@@ -155,10 +165,13 @@ public class ArticleDetailActivity extends AppCompatActivity
                 }
                 mCursor.moveToNext();
             }
-
         }
     }
 
+    @Override
+    public void setPrimaryItem(ViewGroup container, int position, Object object) {
+        mCurrentDetailsFragment = (ArticleDetailFragment) object;
+    }
 
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
@@ -171,55 +184,14 @@ public class ArticleDetailActivity extends AppCompatActivity
         mPager = findViewById(R.id.article_pager);
         mPagerAdapter = new ArticlePagerAdapter(getSupportFragmentManager(), this);
         mPager.setAdapter(mPagerAdapter);
-
-
-
         float dimensionValue = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 1, getResources().getDisplayMetrics());
         Timber.d("dimensionValue: " + dimensionValue);
         mPager.setPageMargin((int) dimensionValue);
-        //TODO what is this?
+        //what is this?
         mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
-
     }
 
-    @Override
-    public void setPrimaryItem(ViewGroup container, int position, Object object) {
-        mCurrentDetailsFragment = (ArticleDetailFragment) object;
-    }
+
 }
 
-
-
-/* Revisit one page adapter is working */
- /*
-        //attribution:  https://stackoverflow.com/a/32724422/9128441
-        final CollapsingToolbarLayout collapsingToolbarLayout =  findViewById(R.id.collapsing_toolbar);
-        AppBarLayout appBarLayout = findViewById(R.id.appbar);
-        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-            boolean isShow = true;
-            int scrollRange = -1;
-
-            @Override
-            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-                //TextView hiddenTitle = findViewById(R.id.hidden_title);
-                if (scrollRange == -1) {
-                    scrollRange = appBarLayout.getTotalScrollRange();
-                }
-                if (scrollRange + verticalOffset == 0) {
-
-
-
-                   // hiddenTitle.setText(getArticleTitle());
-                  //  hiddenTitle.setVisibility(View.VISIBLE);
-                 //   collapsingToolbarLayout.setTitle(getArticleTitle());
-                    isShow = true;
-                } else if(isShow) {
-                    collapsingToolbarLayout.setTitle(" ");
-                    isShow = false;
-                  //  hiddenTitle.setVisibility(View.GONE);
-                }
-            }
-        });
-
-*/

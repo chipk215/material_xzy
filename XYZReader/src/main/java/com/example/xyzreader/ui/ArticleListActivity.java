@@ -73,6 +73,7 @@ public class ArticleListActivity extends AppCompatActivity implements
                 @Override
                 public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
                     if (mTmpReenterState != null) {
+                        Timber.d("Handling return transition");
                         long startingArticleId = mTmpReenterState.getLong(EXTRA_STARTING_ARTICLE_ID);
                         long currentArticleId = mTmpReenterState.getLong(EXTRA_CURRENT_ARTICLE_ID);
                         if (startingArticleId != currentArticleId) {
@@ -114,8 +115,6 @@ public class ArticleListActivity extends AppCompatActivity implements
             mAnimateTransition = false;
         }
 
-        //Stetho.initializeWithDefaults(this);
-
         mToolbar =  findViewById(R.id.collapse_toolbar);
         setSupportActionBar(mToolbar);
 
@@ -136,14 +135,11 @@ public class ArticleListActivity extends AppCompatActivity implements
     @Override
     public void onActivityReenter(int requestCode, Intent data) {
         super.onActivityReenter(requestCode, data);
+        Timber.d("onActivityReenter");
         mTmpReenterState = new Bundle(data.getExtras());
 
         // This only works if the corresponding thumbnail view is visible on the
-        // screen (or has been visible) after returning to ArticleListActivity and refreshing from the
-        // cloud's XYZ article server.  The refresh could mean the corresponding
-        // article is no longer available (it was removed from the server) or
-        // the corresponding thumbnail view is not bound to the recycler view
-        // because it is offscreen.
+        // screen (or has been visible).
 
         // We need a more general solution that matches an article id with any corresponding
         // thumbnail view and then scrolls the corresponding view to be on-screen if it exists.
@@ -163,6 +159,8 @@ public class ArticleListActivity extends AppCompatActivity implements
                 return true;
             }
         });
+
+
     }
 
     private void startUpdateService() {
@@ -250,7 +248,6 @@ public class ArticleListActivity extends AppCompatActivity implements
         mRecyclerView.setAdapter(null);
     }
 
-
     private void initRecyclerView(){
         mRecyclerView =  findViewById(R.id.recycler_view);
         int columnCount = getResources().getInteger(R.integer.list_column_count);
@@ -262,9 +259,9 @@ public class ArticleListActivity extends AppCompatActivity implements
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, columnCount));
     }
 
-
     private void initRefreshLayout(){
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        mSwipeRefreshLayout.setEnabled(false);
     }
 
 }

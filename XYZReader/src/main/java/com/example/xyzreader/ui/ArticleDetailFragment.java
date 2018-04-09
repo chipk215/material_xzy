@@ -7,7 +7,6 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.ShareCompat;
@@ -49,6 +48,7 @@ public class ArticleDetailFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final String ARG_ITEM_ID = "item_id";
+    private static final String SAVE_BYTES_READ_KEY = "save_bytes_read_key";
 
     // Paged article text size
     private static final int TEXT_BLOCK_SIZE = 2000;
@@ -83,8 +83,6 @@ public class ArticleDetailFragment extends Fragment implements
     @BindView(R.id.toolbar )
     Toolbar mToolBar;
 
-    private Bitmap mArticleImageBitmap;
-
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -104,13 +102,13 @@ public class ArticleDetailFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
+        if (savedInstanceState != null){
+            mCharactersConsumed = savedInstanceState.getInt(SAVE_BYTES_READ_KEY);
+        }else if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
             Timber.d("Detail Fragment onCreate... itemId= %s", mItemId);
+            mCharactersConsumed = 0;
         }
-        mCharactersConsumed = 0;
-        mArticleImageBitmap = null;
-
     }
 
 
@@ -134,9 +132,7 @@ public class ArticleDetailFragment extends Fragment implements
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
         mUnbinder = ButterKnife.bind(this, mRootView);
         setUpToolBar();
-
         setUpFAB();
-
         return mRootView;
     }
 
@@ -148,8 +144,9 @@ public class ArticleDetailFragment extends Fragment implements
         return ArticleLoader.newInstanceForItemId(getActivity(), mItemId);
     }
 
+
     @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+    public void onLoadFinished(@NonNull Loader<Cursor> cursorLoader, Cursor cursor) {
         Timber.d("Entering onLoadFinished");
         if (!isAdded()) {
             if (cursor != null) {
@@ -172,8 +169,8 @@ public class ArticleDetailFragment extends Fragment implements
             getActivity().startPostponedEnterTransition();
         }
         bindViews();
-
     }
+
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> cursorLoader) {
@@ -182,17 +179,26 @@ public class ArticleDetailFragment extends Fragment implements
         bindViews();
     }
 
+
     @Override
-    public void onDestroyView(){
-        super.onDestroyView();
-        mUnbinder.unbind();
+    public void onSaveInstanceState(Bundle savedInstanceState){
+        Timber.d("Saving state data on configuration chenge");
+        savedInstanceState.putInt(SAVE_BYTES_READ_KEY,mCharactersConsumed);
+        super.onSaveInstanceState(savedInstanceState);
     }
 
 
+    @Override
+    public void onDestroyView(){
+
+        mUnbinder.unbind();
+        super.onDestroyView();
+    }
+
+
+
+
     private void setUpToolBar() {
-
-        Timber.d("Setup toolbar");
-
         if (mToolBar != null) {
 
             ((AppCompatActivity)getActivity()).setSupportActionBar(mToolBar);
@@ -200,6 +206,7 @@ public class ArticleDetailFragment extends Fragment implements
                 @Override
                 public void onClick(View v) {
                     Timber.d("handling tool bar nav click");
+                    mBodyView.setText("");
                     getActivity().supportFinishAfterTransition();
                 }
             });
@@ -220,6 +227,7 @@ public class ArticleDetailFragment extends Fragment implements
                 if (mCursor != null) {
                     String message = formatShareMessage(mCursor);
                     startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(getActivity())
+                            .setType("text/plain")
                             .setText(message)
                             .getIntent(), getString(R.string.action_share)));
                 }
@@ -237,7 +245,7 @@ public class ArticleDetailFragment extends Fragment implements
         Debug.startMethodTracing("sample-" + logDate);
         */
 
-        Timber.d("Entering bindViews for mItemId: " + mItemId);
+        Timber.d("Entering bindViews for mItemId: %s", mItemId);
         if (mRootView == null) {
             Timber.d("Exiting bindViews due to null mRootView");
             return;
@@ -249,14 +257,12 @@ public class ArticleDetailFragment extends Fragment implements
         final String bodyText = mCursor.getString(ArticleLoader.Query.BODY);
         final long articleLength = bodyText.length();
 
-
         mReadMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 processArticleText(articleLength, bodyText);
             }
         });
-
 
         // Seems to be appropriate typeface for articles: http://www.1001fonts.com/rosario-font.html
         mBodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
@@ -285,15 +291,15 @@ public class ArticleDetailFragment extends Fragment implements
                         @Override
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
                             Timber.d("Article image loaded");
-                            mArticleImageBitmap  = imageContainer.getBitmap();
-                            if ( mArticleImageBitmap!= null) {
+                            final Bitmap articleImageBitmap  = imageContainer.getBitmap();
+                            if ( articleImageBitmap!= null) {
 
-                                Palette.from(mArticleImageBitmap).maximumColorCount(12).generate(new Palette.PaletteAsyncListener() {
+                                Palette.from(articleImageBitmap).maximumColorCount(12).generate(new Palette.PaletteAsyncListener() {
                                     @Override
                                     public void onGenerated(@NonNull Palette palette) {
                                         int mutedMetaBarColor = palette.getDarkMutedColor(getResources()
                                                 .getColor(R.color.meta_bar_default_muted_color));
-                                        mArticleImage.setImageBitmap(mArticleImageBitmap);
+                                        mArticleImage.setImageBitmap(articleImageBitmap);
                                         mMetaBar.setBackgroundColor(mutedMetaBarColor);
                                         mToolBar.setBackgroundColor(mutedMetaBarColor);
                                     }
@@ -323,9 +329,13 @@ public class ArticleDetailFragment extends Fragment implements
     // Sets the first block of article text
     private void setArticleText(final long articleLength){
         Spanned htmlBody;
+        int charactersToRead = TEXT_BLOCK_SIZE;
         if (articleLength > TEXT_BLOCK_SIZE){
-            String bodyString = mCursor.getString(ArticleLoader.Query.BODY).substring(0,TEXT_BLOCK_SIZE);
-            int lastSpaceIndex = bodyString.lastIndexOf(" ",TEXT_BLOCK_SIZE-1);
+            if (mCharactersConsumed > TEXT_BLOCK_SIZE){
+                charactersToRead = mCharactersConsumed;
+            }
+            String bodyString = mCursor.getString(ArticleLoader.Query.BODY).substring(0,charactersToRead);
+            int lastSpaceIndex = bodyString.lastIndexOf(" ",charactersToRead-1);
             mCharactersConsumed = lastSpaceIndex;
 
             htmlBody = Html.fromHtml(bodyString.substring(0,lastSpaceIndex) );
@@ -412,6 +422,5 @@ public class ArticleDetailFragment extends Fragment implements
     public long getArticleId(){
         return mItemId;
     }
-
 
 }

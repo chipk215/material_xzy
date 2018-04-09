@@ -3,6 +3,7 @@
 
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -60,7 +61,8 @@
             android:background="@color/max_width_linear_bgColor"
             android:elevation="@dimen/max_width_linear_elevation"
             android:maxWidth="@dimen/detail_card_max_width"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            tools:targetApi="lollipop">
 
 
             <LinearLayout
