@@ -1,9 +1,11 @@
 package com.example.xyzreader.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -32,6 +34,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
+import com.example.xyzreader.tasks.ReadBodyText;
 import com.example.xyzreader.utility.DateHelper;
 
 import butterknife.BindView;
@@ -45,13 +48,14 @@ import timber.log.Timber;
  * tablets) or a {@link ArticleDetailActivity} on handsets.
  */
 public class ArticleDetailFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+        LoaderManager.LoaderCallbacks<Cursor>,
+        ReadBodyText.BodyTextCallback{
 
     public static final String ARG_ITEM_ID = "item_id";
     private static final String SAVE_BYTES_READ_KEY = "save_bytes_read_key";
 
     // Paged article text size
-    private static final int TEXT_BLOCK_SIZE = 2000;
+    public static final int TEXT_BLOCK_SIZE = 2000;
 
     private Unbinder mUnbinder;
 
@@ -62,26 +66,19 @@ public class ArticleDetailFragment extends Fragment implements
     private int mCharactersConsumed;
     private String mPhotoURL;
 
-    @BindView(R.id.article_body)
-    TextView mBodyView;
+    @BindView(R.id.article_body) TextView mBodyView;
 
-    @BindView(R.id.read_more)
-    Button mReadMore;
+    @BindView(R.id.read_more) Button mReadMore;
 
-    @BindView(R.id.article_title)
-    TextView mTitleView;
+    @BindView(R.id.article_title) TextView mTitleView;
 
-    @BindView(R.id.article_byline)
-    TextView mByLineView ;
+    @BindView(R.id.article_byline) TextView mByLineView ;
 
-    @BindView(R.id.meta_bar)
-    LinearLayout mMetaBar;
+    @BindView(R.id.meta_bar) LinearLayout mMetaBar;
 
-    @BindView(R.id.article_image)
-    ImageView mArticleImage;
+    @BindView(R.id.article_image) ImageView mArticleImage;
 
-    @BindView(R.id.toolbar )
-    Toolbar mToolBar;
+    @BindView(R.id.toolbar ) Toolbar mToolBar;
 
 
     /**
@@ -162,13 +159,14 @@ public class ArticleDetailFragment extends Fragment implements
             Timber.e( "Error reading item detail cursor");
             mCursor.close();
             mCursor = null;
+        }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mArticleImage.setTransitionName(mCursor.getString(ArticleLoader.Query._ID));
+                getActivity().startPostponedEnterTransition();
+
+            bindViews();
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mArticleImage.setTransitionName(mCursor.getString(ArticleLoader.Query._ID));
-            getActivity().startPostponedEnterTransition();
-        }
-        bindViews();
+
     }
 
 
@@ -194,8 +192,6 @@ public class ArticleDetailFragment extends Fragment implements
         mUnbinder.unbind();
         super.onDestroyView();
     }
-
-
 
 
     private void setUpToolBar() {
@@ -250,17 +246,18 @@ public class ArticleDetailFragment extends Fragment implements
             Timber.d("Exiting bindViews due to null mRootView");
             return;
         }
+        mBodyView.setText("");
 
         mByLineView.setMovementMethod(new LinkMovementMethod());
 
         Timber.d("Request body text");
-        final String bodyText = mCursor.getString(ArticleLoader.Query.BODY);
-        final long articleLength = bodyText.length();
 
+        final ArticleDetailFragment thisFragment = this;
         mReadMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                processArticleText(articleLength, bodyText);
+                ReadBodyText reader = new ReadBodyText(mCharactersConsumed,thisFragment);
+                reader.execute(mCursor);
             }
         });
 
@@ -268,7 +265,6 @@ public class ArticleDetailFragment extends Fragment implements
         mBodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
         if (mCursor != null) {
-
             // retrieve title
             mTitleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
 
@@ -281,7 +277,9 @@ public class ArticleDetailFragment extends Fragment implements
                     + mCursor.getString(ArticleLoader.Query.AUTHOR)
                     + "</font>"));
 
-            setArticleText(articleLength);
+
+            ReadBodyText reader = new ReadBodyText(mCharactersConsumed,this);
+            reader.execute(mCursor);
 
             // get photo
             mPhotoURL = mCursor.getString(ArticleLoader.Query.PHOTO_URL);
@@ -326,30 +324,6 @@ public class ArticleDetailFragment extends Fragment implements
     }
 
 
-    // Sets the first block of article text
-    private void setArticleText(final long articleLength){
-        Spanned htmlBody;
-        int charactersToRead = TEXT_BLOCK_SIZE;
-        if (articleLength > TEXT_BLOCK_SIZE){
-            if (mCharactersConsumed > TEXT_BLOCK_SIZE){
-                charactersToRead = mCharactersConsumed;
-            }
-            String bodyString = mCursor.getString(ArticleLoader.Query.BODY).substring(0,charactersToRead);
-            int lastSpaceIndex = bodyString.lastIndexOf(" ",charactersToRead-1);
-            mCharactersConsumed = lastSpaceIndex;
-
-            htmlBody = Html.fromHtml(bodyString.substring(0,lastSpaceIndex) );
-        }else{
-            htmlBody = Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY));
-            // use invisible to keep bottom padding
-            mReadMore.setVisibility(View.INVISIBLE);
-            mReadMore.setEnabled(false);
-        }
-
-        mBodyView.setText(htmlBody);
-        Timber.d("Body text returned");
-    }
-
 
     private static void appendColoredText(TextView tv, String text, int color) {
         int start = tv.getText().length();
@@ -360,46 +334,6 @@ public class ArticleDetailFragment extends Fragment implements
         spannableText.setSpan(new ForegroundColorSpan(color), start, end, 0);
     }
 
-
-    // Process 2-n blocks of article text
-    private void processArticleText(long articleLength, String bodyText){
-        String newText;
-        if ((articleLength - mCharactersConsumed) > TEXT_BLOCK_SIZE){
-            // There is more article text to process
-            int startIndex = mCharactersConsumed;
-            newText = bodyText.substring(startIndex,
-                    startIndex + TEXT_BLOCK_SIZE);
-
-            // Don't split a word, find the last occurring space in the new text
-            int newTextLength = newText.length();
-            int lastSpaceIndex = newText.lastIndexOf(" ",newTextLength);
-            if (lastSpaceIndex == -1){
-                lastSpaceIndex = newTextLength;
-            }
-
-            newText = newText.substring(0, lastSpaceIndex);
-            mCharactersConsumed+= newText.length();
-
-        }else{
-            // This is the last block of article text
-            newText = bodyText.substring(mCharactersConsumed);
-            mReadMore.setVisibility(View.INVISIBLE);
-        }
-
-        // determine end of first work in new text
-        int endOfFirstWordIndex = newText.indexOf(' ',1);
-        if (endOfFirstWordIndex == -1){
-            endOfFirstWordIndex = 1;
-        }
-
-        // Color the first word to help the reader locate the start of new text
-        appendColoredText(mBodyView,newText.substring(0,endOfFirstWordIndex),
-                getResources().getColor(R.color.first_wordColor));
-
-        String remainder = "&nbsp" + newText.substring(endOfFirstWordIndex) ;
-        mBodyView.append(Html.fromHtml(remainder));
-
-    }
 
 
     // Combine the article title and author information
@@ -423,4 +357,19 @@ public class ArticleDetailFragment extends Fragment implements
         return mItemId;
     }
 
+    @Override
+    public void ReadBodyText(Spanned htmlBody, int charactersRead,
+                             boolean lastBlockRead, String continuationWord) {
+        if (continuationWord != null){
+            // Color the first word to help the reader locate the start of new text
+            appendColoredText(mBodyView,continuationWord,
+                    getResources().getColor(R.color.first_wordColor));
+        }
+
+        mBodyView.append(htmlBody);
+        mCharactersConsumed+=charactersRead;
+        if (lastBlockRead){
+            mReadMore.setVisibility(View.INVISIBLE);
+        }
+    }
 }

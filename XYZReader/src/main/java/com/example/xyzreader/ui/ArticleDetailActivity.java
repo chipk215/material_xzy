@@ -106,7 +106,9 @@ public class ArticleDetailActivity extends AppCompatActivity
         if (count == 0) {
             super.onBackPressed();
             //additional code
-            supportFinishAfterTransition();
+             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                supportFinishAfterTransition();
+            }
         } else {
             getSupportFragmentManager().popBackStack();
         }
