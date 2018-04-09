@@ -29,6 +29,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
@@ -202,7 +203,7 @@ public class ArticleDetailFragment extends Fragment implements
                 @Override
                 public void onClick(View v) {
                     Timber.d("handling tool bar nav click");
-                    mBodyView.setText("");
+                  //  ((ViewGroup)mBodyView.getParent()).removeView(mBodyView);
                     getActivity().supportFinishAfterTransition();
                 }
             });
@@ -256,6 +257,7 @@ public class ArticleDetailFragment extends Fragment implements
         mReadMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(getContext(), "Click", Toast.LENGTH_SHORT).show();
                 ReadBodyText reader = new ReadBodyText(mCharactersConsumed,thisFragment);
                 reader.execute(mCursor);
             }

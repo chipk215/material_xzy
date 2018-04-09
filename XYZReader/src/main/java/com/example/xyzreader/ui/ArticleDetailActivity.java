@@ -93,6 +93,8 @@ public class ArticleDetailActivity extends AppCompatActivity
         Intent data = new Intent();
         data.putExtra(EXTRA_STARTING_ARTICLE_ID, mStartArticleId);
         data.putExtra(EXTRA_CURRENT_ARTICLE_ID, mCurrentDetailsFragment.getArticleId());
+        Timber.d("start article id= %d Current article id= %d", mStartArticleId,
+                mCurrentDetailsFragment.getArticleId());
         setResult(RESULT_OK, data);
         super.supportFinishAfterTransition();
     }
@@ -121,10 +123,11 @@ public class ArticleDetailActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ActivityCompat.postponeEnterTransition(this);
+
         mIsReturning = false;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            postponeEnterTransition();
             setEnterSharedElementCallback(mSharedElementCallback);
         }
 

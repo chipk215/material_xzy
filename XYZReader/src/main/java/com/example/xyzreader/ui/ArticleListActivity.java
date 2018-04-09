@@ -76,16 +76,20 @@ public class ArticleListActivity extends AppCompatActivity implements
                         Timber.d("Handling return transition");
                         long startingArticleId = mTmpReenterState.getLong(EXTRA_STARTING_ARTICLE_ID);
                         long currentArticleId = mTmpReenterState.getLong(EXTRA_CURRENT_ARTICLE_ID);
+                        Timber.d("start article id= %d Current article id= %d", startingArticleId,
+                                currentArticleId);
                         if (startingArticleId != currentArticleId) {
                             // get the thumbnail corresponding to the current article id
                             // this only works if the requested view is visible- see note below
                             View newSharedElement = mRecyclerView.findViewWithTag(currentArticleId);
                             if (newSharedElement != null){
+                                String transitionName = newSharedElement.getTransitionName();
+                                Timber.d("New transition name= " + transitionName);
                                 // an article with the corresponding id is in view
                                 names.clear();
-                                names.add(newSharedElement.getTransitionName());
+                                names.add(transitionName);
                                 sharedElements.clear();
-                                sharedElements.put(newSharedElement.getTransitionName(), newSharedElement);
+                                sharedElements.put(transitionName, newSharedElement);
                             }
                         }
                         mTmpReenterState = null;
@@ -110,6 +114,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Apply activity transition
             mAnimateTransition = true;
+            setExitSharedElementCallback(mSharedElementCallback);
         } else {
             // Swap without transition
             mAnimateTransition = false;
@@ -150,12 +155,15 @@ public class ArticleListActivity extends AppCompatActivity implements
 
         //Attribution: https://github.com/alexjlockwood/adp-activity-transitions
         postponeEnterTransition();
+
         mRecyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
                 mRecyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
                 mRecyclerView.requestLayout();
+                Timber.d("Starting postponed transition in PreDraw");
                 startPostponedEnterTransition();
+
                 return true;
             }
         });
@@ -214,6 +222,8 @@ public class ArticleListActivity extends AppCompatActivity implements
         return ArticleLoader.newAllArticlesInstance(this);
     }
 
+
+    @SuppressLint("NewApi")
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         Timber.d("onLoadFinished invoked.. new adapter") ;
@@ -240,6 +250,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         });
         adapter.setHasStableIds(true);
         mRecyclerView.setAdapter(adapter);
+
 
     }
 
