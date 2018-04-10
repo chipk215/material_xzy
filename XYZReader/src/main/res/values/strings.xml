@@ -17,5 +17,7 @@
     <string name="continue_reading">Continue Reading...</string>
     <string name="transition_photo">transition_photo</string>
 
+    <string name="articles_refreshed">Articles Refreshed!</string>
+
 
 </resources>

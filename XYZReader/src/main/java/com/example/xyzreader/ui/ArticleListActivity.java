@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -35,61 +36,6 @@ import java.util.Map;
 
 import timber.log.Timber;
 
-
-/**
- * Reviewer:
- *
- * I would like to have not submitted the project in its current state but I am stuck and need some
- * help.
- *
- * Here is a link to the forum where I sought advice:
- *
- * https://discussions.udacity.com/t/xyzreader-openglrenderer-error-looking-for-suggestion/659094
- *
- * Summarizing:
- * The app faults when returning to the main list activity from the detail activity. There are two
- * threads at play here the Rendering thread (15050) and my application thread 15030.
- *
- * Scenario
- *
- * Only occurs on my (only) test device not an emulator, I’m assuming the emulator does not use the
- * same OpenGL library. To trigger the error, the user must navigate to a detail screen where a
- * small block (2000 characters) of article text is displayed. A button allows the user to request
- * more text which results in the next 2k block of text being shown to the user. The user can request
- * more text which is processed in the same 2k blocks. All appears to be good with the text
- * presentation. The text processing which includes loading the article text from the database,
- * block sizing, and html formatting has been moved to a background thread in theReadBodyText async task.
-
- * The error occurs when the user has requested more than 1 text block and then uses the up button
- * or back button to return to the main list activity.
-
- * A shared item transition is implemented with the shared item being the article thumbnail
- * and article image.
-
- * Analysis
-
- * I don’t think the error is related to the shared item transition, the error does not occur if the
- * user simply navigates to different detail screens and eventually back to the main list activity
- * unless the user goes through the “read more text” scenario described above.
-
- * I don’t have a real device running with less than API 21 to verify the transition code is not a
- * factor and as mentioned the error doesn’t occur on an emulator irrespective of whether transitions
- * are enabled (API 21 and up) or not.
-
- * My best guess is the issue correlates to amending (Spannable) text to the textview outside of
- * onCreateView but this is just an hypothesis. Can anyone comment on this?
-
- * Perhaps I should use a separate fragment for the article text body and load the amended text only
- * in onCreateView of this fragment? This would appear to be a significant change to the design.
- *
- * I’m too inexperienced Android world to seriously consider a bug in the OpenGL library.
- *
- * I’ve spent nearly a week debugging this issue and before trudging on would like to discuss.
- *
- *
- *
- *
- */
 
 
 public class ArticleListActivity extends AppCompatActivity implements
@@ -204,6 +150,12 @@ public class ArticleListActivity extends AppCompatActivity implements
         // of this project.
 
 
+        // This is where we'd like to scroll the gridview if the desired thumbnail is
+        // offscreen. I could not figure out how to scroll to a view without having its position.
+        // Saving the position in a tag might be a solution?
+
+
+
         //Attribution: https://github.com/alexjlockwood/adp-activity-transitions
         postponeEnterTransition();
 
@@ -303,11 +255,26 @@ public class ArticleListActivity extends AppCompatActivity implements
         mRecyclerView.setAdapter(adapter);
 
 
+
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mRecyclerView.setAdapter(null);
+    }
+
+    private void showSnackbar(View view, String message, int duration){
+        // Create snackbar
+        final Snackbar snackbar = Snackbar.make(view, message, duration);
+
+        // Set an action on it, and a handler
+        snackbar.setAction("DISMISS", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                snackbar.dismiss();
+            }
+        });
+        snackbar.show();
     }
 
     private void initRecyclerView(){
@@ -319,6 +286,11 @@ public class ArticleListActivity extends AppCompatActivity implements
         // but I simple changed to a grid view.
         // reference: https://material.io/guidelines/components/cards.html#cards-usage
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, columnCount));
+
+        // why snack here? Because onLoadFinished is getting invoked twice when the activity
+        // is first created for an unknown reason.
+        String message = getResources().getString(R.string.articles_refreshed);
+        showSnackbar(findViewById(R.id.article_list_layout_id), message, Snackbar.LENGTH_SHORT);
     }
 
     private void initRefreshLayout(){
