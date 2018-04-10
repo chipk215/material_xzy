@@ -257,7 +257,7 @@ public class ArticleDetailFragment extends Fragment implements
         mReadMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), "Click", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "Click", Toast.LENGTH_SHORT).show();
                 ReadBodyText reader = new ReadBodyText(mCharactersConsumed,thisFragment);
                 reader.execute(mCursor);
             }
