@@ -21,11 +21,20 @@ public class ReadBodyText extends AsyncTask<Cursor, Void, Spanned> {
     private boolean mLastBlockRead;
     String mContinuationWord = null;
 
+    private int mBlockSize;
+
 
     public ReadBodyText(int startIndex,  BodyTextCallback callback) {
         mStartIndex = startIndex;
         mCallback = callback;
+        mBlockSize = ArticleDetailFragment.TEXT_BLOCK_SIZE;
+        mLastBlockRead = false;
+    }
 
+    public ReadBodyText(int startIndex, int charactersToRead, BodyTextCallback callback) {
+        mStartIndex = startIndex;
+        mCallback  = callback;
+        mBlockSize = charactersToRead;
         mLastBlockRead = false;
     }
 
@@ -43,11 +52,11 @@ public class ReadBodyText extends AsyncTask<Cursor, Void, Spanned> {
         int remainingCharacters = articleLength - mStartIndex;
         String bodyString;
 
-        if (remainingCharacters > ArticleDetailFragment.TEXT_BLOCK_SIZE){
+        if (remainingCharacters > mBlockSize){
 
             // read a block sized chunk
 
-            charactersToRead = ArticleDetailFragment.TEXT_BLOCK_SIZE;
+            charactersToRead = mBlockSize;
             bodyString = articleText.substring(mStartIndex,mStartIndex+charactersToRead);
 
             // Don't split a word, find the last occurring space in the new text

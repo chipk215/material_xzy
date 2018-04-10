@@ -65,6 +65,7 @@ public class ArticleDetailFragment extends Fragment implements
 
     private View mRootView;
     private int mCharactersConsumed;
+    private int mInitialReadSize;
     private String mPhotoURL;
 
     @BindView(R.id.article_body) TextView mBodyView;
@@ -101,13 +102,15 @@ public class ArticleDetailFragment extends Fragment implements
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState != null){
-            mCharactersConsumed = savedInstanceState.getInt(SAVE_BYTES_READ_KEY);
+            mInitialReadSize = savedInstanceState.getInt(SAVE_BYTES_READ_KEY);
             mItemId = savedInstanceState.getLong(ARG_ITEM_ID);
         }else if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
             Timber.d("Detail Fragment onCreate... itemId= %s", mItemId);
-            mCharactersConsumed = 0;
+            mInitialReadSize = TEXT_BLOCK_SIZE;
         }
+
+        mCharactersConsumed = 0;
     }
 
 
@@ -282,7 +285,7 @@ public class ArticleDetailFragment extends Fragment implements
                     + "</font>"));
 
 
-            ReadBodyText reader = new ReadBodyText(mCharactersConsumed,this);
+            ReadBodyText reader = new ReadBodyText(0,mInitialReadSize,this);
             reader.execute(mCursor);
 
             // get photo

@@ -157,6 +157,7 @@ public class ArticleDetailActivity extends AppCompatActivity
         mCursor = cursor;
         mPagerAdapter.setCursor(cursor);
         mPager.getAdapter().notifyDataSetChanged();
+        mPager.setPageTransformer(true, mPagerAdapter);
 
         // Select the start ID
         if (mStartArticleId > 0) {
