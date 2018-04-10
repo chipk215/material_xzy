@@ -7,7 +7,7 @@
     app:elevation="@dimen/fab_elevation"
     app:pressedTranslationZ="12dp"
 
-    android:layout_gravity="top|end"
+    android:layout_gravity="bottom|end"
     android:layout_margin="@dimen/fab_margin"
 
     android:background="@drawable/add_fab_background"
