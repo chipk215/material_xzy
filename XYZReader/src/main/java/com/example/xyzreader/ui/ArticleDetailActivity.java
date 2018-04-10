@@ -99,7 +99,7 @@ public class ArticleDetailActivity extends AppCompatActivity
         super.supportFinishAfterTransition();
     }
 
-/*
+
     @Override
     public void onBackPressed() {
         Timber.d("executing onBackPressed");
@@ -116,7 +116,7 @@ public class ArticleDetailActivity extends AppCompatActivity
         }
 
     }
-*/
+
 
 
     @Override

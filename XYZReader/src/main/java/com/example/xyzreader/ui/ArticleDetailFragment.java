@@ -102,6 +102,7 @@ public class ArticleDetailFragment extends Fragment implements
 
         if (savedInstanceState != null){
             mCharactersConsumed = savedInstanceState.getInt(SAVE_BYTES_READ_KEY);
+            mItemId = savedInstanceState.getLong(ARG_ITEM_ID);
         }else if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
             Timber.d("Detail Fragment onCreate... itemId= %s", mItemId);
@@ -181,8 +182,9 @@ public class ArticleDetailFragment extends Fragment implements
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState){
-        Timber.d("Saving state data on configuration chenge");
+        Timber.d("Saving state data on configuration change");
         savedInstanceState.putInt(SAVE_BYTES_READ_KEY,mCharactersConsumed);
+        savedInstanceState.putLong(ARG_ITEM_ID, mItemId);
         super.onSaveInstanceState(savedInstanceState);
     }
 
